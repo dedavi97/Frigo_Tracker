@@ -23,6 +23,7 @@ Dati salvati in localStorage, nessun account, nessuna sync tra dispositivi. Un s
 4. Inventario live entrata/uscita (richiede che l'utente tracci anche i consumi, non solo gli acquisti; complessità riconosciuta e discussa, da validare solo dopo uso reale della V1)
 5. Integrazione Google Calendar (sync bidirezionale)
 6. Notifiche configurabili (giorni prima dell'avviso, oggi fissi a 7 e 2 giorni come riferimento visivo)
+7. Interfaccia dedicata per PC e per telefono, con passaggio automatico in base al dispositivo (oggi c'è un solo layout responsive, vedi `css/style.css`)
 
 ## Convenzioni utente (valide per tutti i suoi progetti)
 1. Nomi progetti: PascalCase con underscore (es. Frigo_Tracker)
