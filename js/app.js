@@ -344,7 +344,7 @@ els.btnGoogleLogin.addEventListener('click', () => {
     })
     .catch((e) => {
       if (e.code === 'auth/popup-closed-by-user') return;
-      mostraToast('Accesso non riuscito, riprova');
+      mostraToast('Accesso non riuscito: ' + (e.code || e.message || 'errore sconosciuto'));
       console.error('Errore accesso Google', e);
     })
     .finally(() => { els.btnGoogleLogin.disabled = false; });
