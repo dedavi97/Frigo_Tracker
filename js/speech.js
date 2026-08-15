@@ -132,11 +132,26 @@ function capitalizza(s) {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-/* ---------------- Wrapper Web Speech API ---------------- */
+/* ---------------- Wrapper Web Speech API ----------------
+   Su Chrome Android la modalità "ascolto continuo" (continuous: true)
+   ha un bug noto: quando il motore si riavvia internamente durante la
+   sessione, a volte ripropone frasi già sentite come se fossero nuove,
+   causando ripetizioni a valanga nella trascrizione. Non è qualcosa che
+   possiamo correggere lato nostro leggendo l'array dei risultati in modo
+   diverso: l'API stessa restituisce dati sporchi in quella modalità.
+
+   Workaround: non usiamo mai l'ascolto continuo. Ascoltiamo una frase
+   alla volta e, appena finisce, facciamo ripartire subito una nuova
+   sessione da zero. Il testo definitivo di ogni frase viene aggiunto
+   una volta sola al nostro elenco (_segmenti): non ci affidiamo più
+   alla "memoria" che l'API mantiene tra un riavvio e l'altro.
+   ========================================================= */
 
 const SpeechEngine = {
   _recognition: null,
-  _finalTranscript: '',
+  _segmenti: [],
+  _inAscolto: false,
+  _callback: {},
 
   isSupported() {
     return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
@@ -148,40 +163,66 @@ const SpeechEngine = {
       onError && onError('not-supported');
       return;
     }
-    this._finalTranscript = '';
+    this._segmenti = [];
+    this._inAscolto = true;
+    this._callback = { onInterim, onError, onEnd };
+    this._avviaSessione(Ctor);
+  },
+
+  _avviaSessione(Ctor) {
     const rec = new Ctor();
     rec.lang = 'it-IT';
-    rec.continuous = true;
+    rec.continuous = false;
     rec.interimResults = true;
 
     rec.onresult = (event) => {
-      // Ricostruiamo l'intera trascrizione da zero ad ogni evento,
-      // leggendo tutto l'array dei risultati (event.results è cumulativo).
-      // Non ci fidiamo di event.resultIndex: su Android/Chrome il motore
-      // può "riavviarsi" internamente e reinviare risultati già ricevuti,
-      // e accumulare con += causava frasi duplicate a valanga.
-      let finalText = '';
       let interim = '';
       for (let i = 0; i < event.results.length; i++) {
         const chunk = event.results[i][0].transcript;
         if (event.results[i].isFinal) {
-          finalText += chunk + ' ';
+          this._aggiungiSegmento(chunk);
         } else {
           interim += chunk;
         }
       }
-      this._finalTranscript = finalText.trim();
-      onInterim && onInterim((this._finalTranscript + ' ' + interim).trim());
+      this._callback.onInterim && this._callback.onInterim((this._testoCompleto() + ' ' + interim).trim());
     };
 
-    rec.onerror = (event) => onError && onError(event.error);
-    rec.onend = () => onEnd && onEnd(this._finalTranscript.trim());
+    rec.onerror = (event) => {
+      // "no-speech" è normale: capita ogni volta che il riavvio automatico
+      // attende la frase successiva e nel frattempo c'è silenzio. Non è un
+      // errore da mostrare all'utente finché siamo ancora in ascolto.
+      if (event.error === 'no-speech' && this._inAscolto) return;
+      this._inAscolto = false;
+      this._callback.onError && this._callback.onError(event.error);
+    };
+
+    rec.onend = () => {
+      if (this._inAscolto) {
+        this._avviaSessione(Ctor);
+      } else {
+        this._callback.onEnd && this._callback.onEnd(this._testoCompleto());
+      }
+    };
 
     this._recognition = rec;
     rec.start();
   },
 
+  _aggiungiSegmento(testoGrezzo) {
+    const testo = testoGrezzo.trim();
+    if (!testo) return;
+    const ultimo = this._segmenti[this._segmenti.length - 1];
+    if (testo === ultimo) return;
+    this._segmenti.push(testo);
+  },
+
+  _testoCompleto() {
+    return this._segmenti.join(' ');
+  },
+
   stop() {
+    this._inAscolto = false;
     if (this._recognition) this._recognition.stop();
   }
 };
