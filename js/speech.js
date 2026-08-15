@@ -21,7 +21,10 @@ const NUMERI_PAROLA = {
   ventotto: 28, ventinove: 29, trenta: 30, trentuno: 31
 };
 
-const SEPARATORI = /\b(poi|quindi|virgola|inoltre)\b/gi;
+// Parole/espressioni che segnalano "fine di un prodotto, ne arriva un altro".
+// Elenco fisso e scritto a mano (nessuna AI): più forme naturali qui dentro,
+// meno l'utente deve ricordarsi di dire esattamente "poi".
+const SEPARATORI = /\b(e\s+poi|poi\s+anche|e\s+quindi|poi|quindi|virgola|inoltre)\b/gi;
 
 function numeroDaTesto(token) {
   if (/^\d{1,2}$/.test(token)) return parseInt(token, 10);
