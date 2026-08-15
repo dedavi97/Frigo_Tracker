@@ -20,9 +20,14 @@
         <p class="brand-sub">Cosa c'è, quando scade</p>
       </div>
     </div>
-    <button id="btn-add" class="btn-icon" title="Registra a voce" aria-label="Registra a voce">
-      <svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12h-2Z" fill="currentColor"/></svg>
-    </button>
+    <div class="header-actions">
+      <button id="btn-account" class="btn-icon" title="Account" aria-label="Account">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z" fill="currentColor"/></svg>
+      </button>
+      <button id="btn-add" class="btn-icon" title="Registra a voce" aria-label="Registra a voce">
+        <svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12h-2Z" fill="currentColor"/></svg>
+      </button>
+    </div>
   </header>
 
   <main id="view-home" class="view">
@@ -103,8 +108,46 @@
     </form>
   </section>
 
+  <!-- Overlay account -->
+  <section id="view-account" class="overlay hidden">
+    <div class="overlay-header">
+      <h2>Account</h2>
+      <button id="btn-close-account" class="btn-icon" aria-label="Chiudi">
+        <svg viewBox="0 0 24 24" width="22" height="22"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="account-body">
+      <div id="account-logged-out" class="account-state hidden">
+        <p>Accedi con Google per sincronizzare i tuoi prodotti su tutti i dispositivi.</p>
+        <button id="btn-google-login" class="btn-primary">Accedi con Google</button>
+      </div>
+      <div id="account-logged-in" class="account-state hidden">
+        <p class="account-email" id="account-email"></p>
+        <p>I tuoi dati sono sincronizzati su tutti i dispositivi.</p>
+        <button id="btn-logout" class="btn-secondary">Esci</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Overlay migrazione dati locali (mostrato una sola volta, al primo login) -->
+  <section id="view-migrazione" class="overlay hidden">
+    <div class="overlay-header">
+      <h2>Dati trovati su questo dispositivo</h2>
+    </div>
+    <div class="account-body">
+      <p>Hai prodotti salvati solo su questo dispositivo. Vuoi caricarli nel tuo account? Si sincronizzeranno su tutti i dispositivi. In ogni caso, restano anche qui.</p>
+      <button id="btn-migra-si" class="btn-primary">Carica nel mio account</button>
+      <button id="btn-migra-no" class="btn-secondary">Lascia solo qui</button>
+    </div>
+  </section>
+
   <div id="toast" class="toast hidden"></div>
 
+  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.13.2/firebase-firestore-compat.js"></script>
+  <script src="js/firebase-config.js"></script>
+  <script src="js/auth.js"></script>
   <script src="js/version.js"></script>
   <script src="js/storage.js"></script>
   <script src="js/speech.js"></script>

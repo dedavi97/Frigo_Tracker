@@ -28,8 +28,23 @@ const els = {
   btnConsumato: document.getElementById('btn-consumato'),
   btnElimina: document.getElementById('btn-elimina'),
 
+  btnAccount: document.getElementById('btn-account'),
+  viewAccount: document.getElementById('view-account'),
+  btnCloseAccount: document.getElementById('btn-close-account'),
+  accountLoggedOut: document.getElementById('account-logged-out'),
+  accountLoggedIn: document.getElementById('account-logged-in'),
+  accountEmail: document.getElementById('account-email'),
+  btnGoogleLogin: document.getElementById('btn-google-login'),
+  btnLogout: document.getElementById('btn-logout'),
+
+  viewMigrazione: document.getElementById('view-migrazione'),
+  btnMigraSi: document.getElementById('btn-migra-si'),
+  btnMigraNo: document.getElementById('btn-migra-no'),
+
   toast: document.getElementById('toast')
 };
+
+const MIGRAZIONE_CHIESTA_KEY = 'frigo_tracker_migrazione_chiesta';
 
 let filtroAttivo = 'tutti';
 let idProdottoInModifica = null;
@@ -234,7 +249,6 @@ els.btnSaveAll.addEventListener('click', () => {
   Storage.aggiungiMassivo(validi);
   mostraToast(`Salvati ${validi.length} prodotti`);
   chiudiVoce();
-  renderLista();
 });
 
 /* ---------------- Overlay dettaglio ---------------- */
@@ -270,7 +284,6 @@ els.detailForm.addEventListener('submit', (e) => {
   });
   mostraToast('Modifiche salvate');
   chiudiDettaglio();
-  renderLista();
 });
 
 els.btnConsumato.addEventListener('click', () => {
@@ -278,7 +291,6 @@ els.btnConsumato.addEventListener('click', () => {
   Storage.segnaStato(idProdottoInModifica, 'consumato');
   mostraToast('Segnato come consumato');
   chiudiDettaglio();
-  renderLista();
 });
 
 els.btnElimina.addEventListener('click', () => {
@@ -287,7 +299,76 @@ els.btnElimina.addEventListener('click', () => {
   Storage.elimina(idProdottoInModifica);
   mostraToast('Prodotto eliminato');
   chiudiDettaglio();
-  renderLista();
+});
+
+/* ---------------- Account ---------------- */
+
+els.btnAccount.addEventListener('click', apriAccount);
+els.btnCloseAccount.addEventListener('click', () => els.viewAccount.classList.add('hidden'));
+
+function apriAccount() {
+  aggiornaViewAccount();
+  els.viewAccount.classList.remove('hidden');
+}
+
+function aggiornaViewAccount() {
+  const utente = Auth.utenteCorrente();
+  els.accountLoggedOut.classList.toggle('hidden', !!utente);
+  els.accountLoggedIn.classList.toggle('hidden', !utente);
+  if (utente) els.accountEmail.textContent = utente.email || '';
+  aggiornaBottoneAccount(utente);
+}
+
+const ICONA_ACCOUNT = '<svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z" fill="currentColor"/></svg>';
+
+function aggiornaBottoneAccount(utente) {
+  if (utente) {
+    const nome = utente.displayName ? utente.displayName.split(' ')[0] : (utente.email || '').split('@')[0];
+    els.btnAccount.textContent = `Ciao, ${nome}`;
+    els.btnAccount.classList.add('btn-account-loggato');
+    els.btnAccount.title = 'Account';
+  } else {
+    els.btnAccount.innerHTML = ICONA_ACCOUNT;
+    els.btnAccount.classList.remove('btn-account-loggato');
+    els.btnAccount.title = 'Accedi';
+  }
+}
+
+els.btnGoogleLogin.addEventListener('click', () => {
+  els.btnGoogleLogin.disabled = true;
+  Auth.accediConGoogle()
+    .then((risultato) => {
+      const nome = (risultato.user.displayName || '').split(' ')[0];
+      mostraToast(nome ? `Bentornato, ${nome}` : 'Accesso effettuato');
+      els.viewAccount.classList.add('hidden');
+    })
+    .catch((e) => {
+      if (e.code === 'auth/popup-closed-by-user') return;
+      mostraToast('Accesso non riuscito, riprova');
+      console.error('Errore accesso Google', e);
+    })
+    .finally(() => { els.btnGoogleLogin.disabled = false; });
+});
+
+els.btnLogout.addEventListener('click', () => {
+  Auth.esci();
+  els.viewAccount.classList.add('hidden');
+  mostraToast('Disconnesso');
+});
+
+/* ---------------- Migrazione dati locali ---------------- */
+
+els.btnMigraSi.addEventListener('click', () => {
+  Storage.migraDatiLocaliSuCloud()
+    .then(() => mostraToast('Dati caricati nel tuo account'))
+    .catch(() => mostraToast('Errore durante il caricamento, riprova più tardi'));
+  localStorage.setItem(MIGRAZIONE_CHIESTA_KEY, '1');
+  els.viewMigrazione.classList.add('hidden');
+});
+
+els.btnMigraNo.addEventListener('click', () => {
+  localStorage.setItem(MIGRAZIONE_CHIESTA_KEY, '1');
+  els.viewMigrazione.classList.add('hidden');
 });
 
 /* ---------------- Toast ---------------- */
@@ -303,7 +384,21 @@ function mostraToast(msg) {
 /* ---------------- Avvio ---------------- */
 
 document.getElementById('app-version').textContent = APP_VERSION;
-renderLista();
+
+Auth.onChange((utente) => {
+  aggiornaViewAccount();
+  if (utente && Storage.haDatiLocaliDaMigrare() && !localStorage.getItem(MIGRAZIONE_CHIESTA_KEY)) {
+    els.viewMigrazione.classList.remove('hidden');
+  }
+});
+
+Storage.onChange(renderLista);
+Storage.init();
+try {
+  Auth.init();
+} catch (e) {
+  console.error('Errore avvio Auth, si continua in modalità locale', e);
+}
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

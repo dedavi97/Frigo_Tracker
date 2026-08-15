@@ -9,6 +9,8 @@ const FILE_DA_CACHARE = [
   './index.html',
   './css/style.css',
   './js/version.js',
+  './js/firebase-config.js',
+  './js/auth.js',
   './js/app.js',
   './js/speech.js',
   './js/storage.js',
