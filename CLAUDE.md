@@ -35,3 +35,5 @@ Dati salvati in localStorage, nessun account, nessuna sync tra dispositivi. Un s
 
 ## Note tecniche specifiche
 Il parser (`js/speech.js`, funzione `parseTranscript`) si aspetta frasi nel formato: `<prodotto> <giorno> <mese> [per <motivo>]`, con più prodotti separati dicendo "poi"/"quindi"/"virgola". Senza questi separatori il parser non riesce ad affidabile distinguere dove finisce il motivo e inizia il prodotto successivo: è una limitazione nota e accettata (vedi discussione con l'utente), non un bug da correggere silenziosamente.
+
+Versione app in `js/version.js` (costante `APP_VERSION`, mostrata in fondo alla pagina): va incrementata ad ogni push. Il service worker (`service-worker.js`) usa questo numero nel nome della cache, quindi alzarlo è anche ciò che forza i dispositivi già installati a scaricare la versione nuova invece di restare bloccati su una cache vecchia.

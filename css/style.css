@@ -178,6 +178,14 @@ h1, h2, h3 {
 .status-urgent .ring-progress { stroke: var(--urgent); }
 .status-urgent .ring-days { color: var(--urgent); }
 
+/* ---------- Footer versione ---------- */
+.app-footer {
+  text-align: center;
+  padding: 24px 0 4px;
+  font-size: 11px;
+  color: var(--text-faint);
+}
+
 /* ---------- Stato vuoto ---------- */
 .empty-state {
   text-align: center;

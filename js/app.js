@@ -302,6 +302,7 @@ function mostraToast(msg) {
 
 /* ---------------- Avvio ---------------- */
 
+document.getElementById('app-version').textContent = APP_VERSION;
 renderLista();
 
 if ('serviceWorker' in navigator) {
