@@ -166,7 +166,6 @@ els.btnMic.addEventListener('click', () => {
 
   SpeechEngine.start({
     onInterim: (testo) => { els.liveTranscript.textContent = testo; },
-    onFinalChunk: (testo) => { els.liveTranscript.textContent = testo; },
     onError: (err) => {
       ascoltoAttivo = false;
       els.btnMic.classList.remove('is-listening');

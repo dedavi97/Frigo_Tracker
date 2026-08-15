@@ -142,7 +142,7 @@ const SpeechEngine = {
     return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
   },
 
-  start({ onInterim, onFinalChunk, onError, onEnd }) {
+  start({ onInterim, onError, onEnd }) {
     const Ctor = window.SpeechRecognition || window.webkitSpeechRecognition;
     if (!Ctor) {
       onError && onError('not-supported');
@@ -155,17 +155,23 @@ const SpeechEngine = {
     rec.interimResults = true;
 
     rec.onresult = (event) => {
+      // Ricostruiamo l'intera trascrizione da zero ad ogni evento,
+      // leggendo tutto l'array dei risultati (event.results è cumulativo).
+      // Non ci fidiamo di event.resultIndex: su Android/Chrome il motore
+      // può "riavviarsi" internamente e reinviare risultati già ricevuti,
+      // e accumulare con += causava frasi duplicate a valanga.
+      let finalText = '';
       let interim = '';
-      for (let i = event.resultIndex; i < event.results.length; i++) {
+      for (let i = 0; i < event.results.length; i++) {
         const chunk = event.results[i][0].transcript;
         if (event.results[i].isFinal) {
-          this._finalTranscript += chunk + ' ';
-          onFinalChunk && onFinalChunk(this._finalTranscript.trim());
+          finalText += chunk + ' ';
         } else {
           interim += chunk;
         }
       }
-      onInterim && onInterim(this._finalTranscript + interim);
+      this._finalTranscript = finalText.trim();
+      onInterim && onInterim((this._finalTranscript + ' ' + interim).trim());
     };
 
     rec.onerror = (event) => onError && onError(event.error);
