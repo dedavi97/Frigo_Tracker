@@ -33,6 +33,16 @@ const els = {
   btnElimina: document.getElementById('btn-elimina'),
   btnRipristina: document.getElementById('btn-ripristina'),
 
+  aperturaInfo: document.getElementById('apertura-info'),
+  aperturaData: document.getElementById('apertura-data'),
+  aperturaScadenzaEffettiva: document.getElementById('apertura-scadenza-effettiva'),
+  btnAnnullaApertura: document.getElementById('btn-annulla-apertura'),
+  aperturaForm: document.getElementById('apertura-form'),
+  fDurataApertura: document.getElementById('f-durata-apertura'),
+  btnAnnullaFormApertura: document.getElementById('btn-annulla-form-apertura'),
+  btnConfermaApertura: document.getElementById('btn-conferma-apertura'),
+  btnSegnaAperto: document.getElementById('btn-segna-aperto'),
+
   btnHelp: document.getElementById('btn-help'),
   viewHelp: document.getElementById('view-help'),
   btnCloseHelp: document.getElementById('btn-close-help'),
@@ -76,6 +86,18 @@ function statoDaGiorni(giorni) {
   return 'fresh';
 }
 
+// Scadenza usata per colore/ordinamento/home: per un prodotto "aperto" non è
+// più quella stampata sulla confezione (f.scadenza, che resta comunque
+// salvata), ma data-apertura + durata-dopo-apertura inserita dall'utente.
+function scadenzaAttiva(p) {
+  if (p.aperto && p.dataApertura && p.durataApertoGiorni) {
+    const d = new Date(p.dataApertura + 'T00:00:00');
+    d.setDate(d.getDate() + Number(p.durataApertoGiorni));
+    return dataLocaleISO(d);
+  }
+  return p.scadenza;
+}
+
 function formattaData(iso) {
   const d = new Date(iso + 'T00:00:00');
   return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
@@ -83,10 +105,10 @@ function formattaData(iso) {
 
 /* ---------------- Rendering lista ---------------- */
 
-function creaAnello(giorni, stato) {
+function creaAnello(giorni, stato, scalaGiorni = 14) {
   const r = 18;
   const circ = 2 * Math.PI * r;
-  const frazione = Math.max(0, Math.min(1, giorni / 14));
+  const frazione = Math.max(0, Math.min(1, giorni / scalaGiorni));
   const offset = circ * (1 - frazione);
   const etichetta = giorni < 0 ? 'Scad.' : giorni === 0 ? 'Oggi' : `${giorni}g`;
 
@@ -110,11 +132,11 @@ function renderLista() {
   const tutti = Storage.getAttivi();
 
   const filtrati = tutti.filter(p => {
-    const giorni = giorniAllaScadenza(p.scadenza);
+    const giorni = giorniAllaScadenza(scadenzaAttiva(p));
     if (filtroAttivo === 'urgente') return giorni <= 7 && giorni >= 0;
     if (filtroAttivo === 'scaduto') return giorni < 0;
     return true;
-  });
+  }).sort((a, b) => scadenzaAttiva(a).localeCompare(scadenzaAttiva(b)));
 
   els.emptyState.classList.toggle('hidden', tutti.length > 0);
   els.emptyState.querySelector('h2').textContent = 'Dispensa vuota';
@@ -122,17 +144,19 @@ function renderLista() {
   els.list.innerHTML = '';
 
   filtrati.forEach(p => {
-    const giorni = giorniAllaScadenza(p.scadenza);
+    const giorni = giorniAllaScadenza(scadenzaAttiva(p));
     const stato = statoDaGiorni(giorni);
+    const scala = (p.aperto && p.durataApertoGiorni) ? Number(p.durataApertoGiorni) : 14;
     const li = document.createElement('li');
     li.className = 'product-card';
     li.dataset.id = p.id;
     li.innerHTML = `
-      ${creaAnello(giorni, stato)}
+      ${creaAnello(giorni, stato, scala)}
       <div class="product-info">
         <p class="product-name">${escapeHtml(p.nome)}</p>
         <p class="product-meta">
-          <span>Scade ${formattaData(p.scadenza)}</span>
+          <span>Scade ${formattaData(scadenzaAttiva(p))}</span>
+          ${p.aperto ? `<span class="tag-aperto">Aperto</span>` : ''}
           ${p.motivo ? `<span class="tag-motivo">${escapeHtml(p.motivo)}</span>` : ''}
         </p>
       </div>`;
@@ -338,7 +362,34 @@ function apriDettaglio(id) {
   els.btnElimina.classList.toggle('hidden', !attivo);
   els.btnRipristina.classList.toggle('hidden', attivo);
 
+  aggiornaAperturaUI(p);
+
   els.viewDetail.classList.remove('hidden');
+}
+
+// La sezione "apertura" ha tre stati possibili, mutuamente esclusivi:
+// 1. prodotto già aperto → info + "Annulla apertura"
+// 2. si sta compilando la durata → form con l'input
+// 3. nessuno dei due → solo il tasto "Segna come aperto"
+// Non attiva per prodotti non attivi (storico): non avrebbe senso.
+function aggiornaAperturaUI(p) {
+  els.aperturaForm.classList.add('hidden');
+
+  if (p.stato !== 'attivo') {
+    els.aperturaInfo.classList.add('hidden');
+    els.btnSegnaAperto.classList.add('hidden');
+    return;
+  }
+
+  if (p.aperto) {
+    els.aperturaInfo.classList.remove('hidden');
+    els.btnSegnaAperto.classList.add('hidden');
+    els.aperturaData.textContent = formattaData(p.dataApertura);
+    els.aperturaScadenzaEffettiva.textContent = formattaData(scadenzaAttiva(p));
+  } else {
+    els.aperturaInfo.classList.add('hidden');
+    els.btnSegnaAperto.classList.remove('hidden');
+  }
 }
 
 function chiudiDettaglio() {
@@ -379,6 +430,42 @@ els.btnRipristina.addEventListener('click', () => {
   if (!idProdottoInModifica) return;
   Storage.ripristina(idProdottoInModifica);
   mostraToast('Prodotto ripristinato');
+  chiudiDettaglio();
+});
+
+/* ---------------- Prodotto "aperto" ---------------- */
+
+els.btnSegnaAperto.addEventListener('click', () => {
+  els.fDurataApertura.value = '';
+  els.btnSegnaAperto.classList.add('hidden');
+  els.aperturaForm.classList.remove('hidden');
+});
+
+els.btnAnnullaFormApertura.addEventListener('click', () => {
+  els.aperturaForm.classList.add('hidden');
+  els.btnSegnaAperto.classList.remove('hidden');
+});
+
+els.btnConfermaApertura.addEventListener('click', () => {
+  if (!idProdottoInModifica) return;
+  const durata = parseInt(els.fDurataApertura.value, 10);
+  if (!durata || durata < 1) {
+    mostraToast('Inserisci un numero di giorni valido');
+    return;
+  }
+  Storage.aggiorna(idProdottoInModifica, {
+    aperto: true,
+    dataApertura: oggiISO(),
+    durataApertoGiorni: durata
+  });
+  mostraToast('Prodotto segnato come aperto');
+  chiudiDettaglio();
+});
+
+els.btnAnnullaApertura.addEventListener('click', () => {
+  if (!idProdottoInModifica) return;
+  Storage.aggiorna(idProdottoInModifica, { aperto: false });
+  mostraToast('Apertura annullata');
   chiudiDettaglio();
 });
 

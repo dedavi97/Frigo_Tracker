@@ -16,6 +16,19 @@
 
 const STORAGE_KEY = 'frigo_tracker_prodotti_v1';
 
+// Formatta una data in locale come YYYY-MM-DD. Non usare toISOString(), che è
+// in UTC: vicino alla mezzanotte, in fusi orari avanti rispetto a UTC (es.
+// l'Italia in ora legale), restituirebbe il giorno prima di quello locale.
+function dataLocaleISO(d) {
+  const mm = String(d.getMonth() + 1).padStart(2, '0');
+  const gg = String(d.getDate()).padStart(2, '0');
+  return `${d.getFullYear()}-${mm}-${gg}`;
+}
+
+function oggiISO() {
+  return dataLocaleISO(new Date());
+}
+
 const Storage = {
   _cache: [],
   _listeners: [],
@@ -121,7 +134,7 @@ const Storage = {
       id: 'p_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
       nome: prodotto.nome,
       scadenza: prodotto.scadenza,       // YYYY-MM-DD
-      acquisto: prodotto.acquisto || new Date().toISOString().slice(0, 10),
+      acquisto: prodotto.acquisto || oggiISO(),
       motivo: prodotto.motivo || '',
       note: prodotto.note || '',
       stato: 'attivo'                     // attivo | consumato | eliminato

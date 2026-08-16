@@ -116,6 +116,23 @@
         <textarea id="f-note" rows="2"></textarea>
       </label>
 
+      <div id="apertura-info" class="apertura-box hidden">
+        <p>Aperto il <span id="apertura-data"></span> — scade effettivamente il <span id="apertura-scadenza-effettiva"></span></p>
+        <button type="button" id="btn-annulla-apertura" class="btn-secondary">Annulla apertura</button>
+      </div>
+
+      <div id="apertura-form" class="apertura-box hidden">
+        <label>Durata dopo l'apertura (giorni)
+          <input type="number" id="f-durata-apertura" min="1" step="1" placeholder="es. 3">
+        </label>
+        <div class="detail-actions">
+          <button type="button" id="btn-annulla-form-apertura" class="btn-secondary">Annulla</button>
+          <button type="button" id="btn-conferma-apertura" class="btn-primary">Conferma apertura</button>
+        </div>
+      </div>
+
+      <button type="button" id="btn-segna-aperto" class="btn-secondary hidden">Segna come aperto</button>
+
       <div class="detail-actions">
         <button type="button" id="btn-consumato" class="btn-secondary">Segna consumato</button>
         <button type="button" id="btn-elimina" class="btn-danger">Elimina</button>
@@ -181,6 +198,8 @@
           <li>Aggiunta prodotti a voce o per testo</li>
           <li>Motivo d'acquisto opzionale</li>
           <li>Modifica, segna come consumato o elimina ogni prodotto</li>
+          <li>"Segna come aperto": se un prodotto dura meno una volta aperto, indichi tu quanti giorni gli restano e l'anello si aggiorna di conseguenza</li>
+          <li>Storico di eliminati/consumati con possibilità di ripristino entro 24 ore</li>
           <li>Account Google opzionale con sincronizzazione tra dispositivi</li>
         </ul>
       </section>

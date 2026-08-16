@@ -186,6 +186,13 @@ h1, h2, h3 {
   border-radius: 999px;
   color: var(--text);
 }
+.product-meta .tag-aperto {
+  background: var(--warn-bg);
+  padding: 1px 8px;
+  border-radius: 999px;
+  color: var(--warn);
+  font-weight: 600;
+}
 
 .storico-badge {
   flex-shrink: 0;
@@ -451,6 +458,28 @@ h1, h2, h3 {
 }
 
 .detail-actions { display: flex; gap: 10px; margin-top: 4px; }
+
+.apertura-box {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 12px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.apertura-box p { margin: 0; font-size: 13.5px; color: var(--text-dim); line-height: 1.5; }
+.apertura-box span { color: var(--text); font-weight: 600; }
+.apertura-box label { display: flex; flex-direction: column; gap: 6px; font-size: 13px; color: var(--text-dim); font-weight: 500; }
+.apertura-box input {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 9px 11px;
+  font-size: 14px;
+  font-family: inherit;
+}
 
 /* ---------- Buttons ---------- */
 .btn-primary, .btn-secondary, .btn-danger {

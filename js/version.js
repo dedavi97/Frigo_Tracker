@@ -4,4 +4,4 @@
    la cache del service worker (vedi service-worker.js).
    ========================================================= */
 
-const APP_VERSION = '1.3.0';
+const APP_VERSION = '1.4.0';
