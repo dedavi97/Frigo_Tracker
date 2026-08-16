@@ -58,6 +58,7 @@ const els = {
   btnLogout: document.getElementById('btn-logout'),
 
   viewMigrazione: document.getElementById('view-migrazione'),
+  migrazioneLista: document.getElementById('migrazione-lista'),
   btnMigraSi: document.getElementById('btn-migra-si'),
   btnMigraNo: document.getElementById('btn-migra-no'),
 
@@ -434,9 +435,11 @@ els.btnRipristina.addEventListener('click', () => {
 /* ---------------- Prodotto "aperto" ---------------- */
 
 els.btnSegnaAperto.addEventListener('click', () => {
-  els.fDurataApertura.value = '';
+  els.fDurataApertura.value = '7';
   els.btnSegnaAperto.classList.add('hidden');
   els.aperturaForm.classList.remove('hidden');
+  els.fDurataApertura.focus();
+  els.fDurataApertura.select();
 });
 
 els.btnAnnullaFormApertura.addEventListener('click', () => {
@@ -532,6 +535,15 @@ els.btnLogout.addEventListener('click', () => {
 
 /* ---------------- Prodotti solo locali in attesa di conferma ---------------- */
 
+function renderListaMigrazione(prodotti) {
+  els.migrazioneLista.innerHTML = prodotti.map(p => `
+    <li>
+      <span class="migrazione-nome">${escapeHtml(p.nome)}</span>
+      <span class="migrazione-data">Scade ${formattaData(p.scadenza)}</span>
+    </li>
+  `).join('');
+}
+
 els.btnMigraSi.addEventListener('click', () => {
   Storage.confermaCaricamentoSoloLocali()
     .then(() => mostraToast('Dati caricati nel tuo account'))
@@ -561,7 +573,10 @@ document.getElementById('app-version').textContent = APP_VERSION;
 Auth.onChange(() => aggiornaViewAccount());
 
 Storage.onChange(renderLista);
-Storage.onDatiSoloLocali(() => els.viewMigrazione.classList.remove('hidden'));
+Storage.onDatiSoloLocali((prodotti) => {
+  renderListaMigrazione(prodotti);
+  els.viewMigrazione.classList.remove('hidden');
+});
 Storage.init();
 try {
   Auth.init();

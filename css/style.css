@@ -383,6 +383,30 @@ h1, h2, h3 {
 .account-body p { margin: 0; font-size: 13.5px; color: var(--text-dim); line-height: 1.5; }
 .account-email { font-size: 15px !important; font-weight: 600; color: var(--text) !important; }
 
+.migrazione-lista {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 30vh;
+  overflow-y: auto;
+}
+.migrazione-lista li {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 10px 12px;
+  font-size: 13.5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+.migrazione-lista .migrazione-nome { color: var(--text); font-weight: 600; }
+.migrazione-lista .migrazione-data { color: var(--text-dim); flex-shrink: 0; }
+
 /* ---------- Aiuto ---------- */
 .help-body {
   padding: 20px;
