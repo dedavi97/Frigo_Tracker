@@ -163,6 +163,7 @@ const SpeechEngine = {
   _segmenti: [],
   _inAscolto: false,
   _callback: {},
+  _tentativiAvvioFalliti: 0,
 
   isSupported() {
     return !!(window.SpeechRecognition || window.webkitSpeechRecognition);
@@ -176,6 +177,7 @@ const SpeechEngine = {
     }
     this._segmenti = [];
     this._inAscolto = true;
+    this._tentativiAvvioFalliti = 0;
     this._callback = { onInterim, onError, onEnd };
     this._avviaSessione(Ctor);
   },
@@ -209,15 +211,46 @@ const SpeechEngine = {
     };
 
     rec.onend = () => {
-      if (this._inAscolto) {
-        this._avviaSessione(Ctor);
-      } else {
+      if (!this._inAscolto) {
         this._callback.onEnd && this._callback.onEnd(this._testoCompleto());
+        return;
       }
+      // Breve pausa prima di riavviare: su alcuni dispositivi Android far
+      // ripartire il riconoscimento nello stesso istante in cui finisce il
+      // precedente fa fallire l'avvio in modo silenzioso, perché il motore
+      // vocale non ha ancora rilasciato il microfono.
+      setTimeout(() => {
+        if (this._inAscolto) this._avviaSessione(Ctor);
+      }, 120);
     };
 
     this._recognition = rec;
-    rec.start();
+    this._avviaConProtezione(rec, Ctor);
+  },
+
+  // rec.start() può fallire in modo sincrono e silenzioso (tipicamente un
+  // errore "InvalidStateError" quando il motore vocale non è ancora pronto
+  // dopo un riavvio troppo ravvicinato). Prima di questa protezione, in quel
+  // caso l'app restava bloccata su "Ti ascolto..." senza che il microfono
+  // ascoltasse davvero, costringendo a chiudere e riaprire per sbloccarsi.
+  // Ora si ritenta un paio di volte con una pausa breve prima di arrendersi
+  // e avvisare l'utente con un errore visibile.
+  _avviaConProtezione(rec, Ctor) {
+    try {
+      rec.start();
+      this._tentativiAvvioFalliti = 0;
+    } catch (e) {
+      this._tentativiAvvioFalliti++;
+      if (this._tentativiAvvioFalliti > 3) {
+        this._inAscolto = false;
+        this._tentativiAvvioFalliti = 0;
+        this._callback.onError && this._callback.onError('avvio-fallito');
+        return;
+      }
+      setTimeout(() => {
+        if (this._inAscolto) this._avviaSessione(Ctor);
+      }, 300);
+    }
   },
 
   _aggiungiSegmento(testoGrezzo) {

@@ -63,14 +63,17 @@
         <span class="mic-ring"></span>
       </button>
       <p id="mic-status" class="mic-status">Tocca per iniziare a parlare</p>
-      <p id="mic-hint" class="mic-hint">Esempio: "yogurt diciotto marzo per la torta, salmone ventuno luglio"</p>
+      <p id="mic-hint" class="mic-hint">Esempio: "yogurt diciotto marzo per la torta, salmone ventuno luglio". Puoi toccare di nuovo il microfono per aggiungere altri prodotti alla lista qui sotto.</p>
       <div id="live-transcript" class="live-transcript" aria-live="polite"></div>
     </div>
 
     <div id="voice-review" class="voice-review hidden">
       <h3>Controlla prima di salvare</h3>
       <ul id="review-list" class="review-list"></ul>
-      <button id="btn-save-all" class="btn-primary">Salva tutto</button>
+      <div class="detail-actions">
+        <button id="btn-clear-review" type="button" class="btn-secondary">Cancella tutto</button>
+        <button id="btn-save-all" class="btn-primary">Salva tutto</button>
+      </div>
     </div>
   </section>
 

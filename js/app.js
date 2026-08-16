@@ -15,6 +15,7 @@ const els = {
   liveTranscript: document.getElementById('live-transcript'),
   voiceReview: document.getElementById('voice-review'),
   reviewList: document.getElementById('review-list'),
+  btnClearReview: document.getElementById('btn-clear-review'),
   btnSaveAll: document.getElementById('btn-save-all'),
 
   viewDetail: document.getElementById('view-detail'),
@@ -188,6 +189,8 @@ els.btnMic.addEventListener('click', () => {
         els.micStatus.textContent = 'Non ho sentito nulla, riprova';
       } else if (err === 'not-allowed') {
         els.micStatus.textContent = 'Permesso microfono negato';
+      } else if (err === 'avvio-fallito') {
+        els.micStatus.textContent = 'Il microfono si è bloccato, tocca di nuovo per riprovare';
       } else {
         els.micStatus.textContent = 'Errore riconoscimento: ' + err;
       }
@@ -207,7 +210,11 @@ function elaboraTrascrizione(testo) {
     mostraToast('Non ho riconosciuto prodotti con una data. Riprova.');
     return;
   }
-  bozzaRiconosciuti = riconosciuti;
+  // Si accoda a quanto già riconosciuto in eventuali sessioni precedenti
+  // (es. l'utente tocca di nuovo il microfono per aggiungere i prodotti
+  // mancanti), non lo sostituisce: altrimenti si perderebbe tutto quello
+  // già raccolto.
+  bozzaRiconosciuti = bozzaRiconosciuti.concat(riconosciuti);
   renderReview();
   els.voiceReview.classList.remove('hidden');
 }
@@ -239,6 +246,12 @@ function renderReview() {
     els.reviewList.appendChild(li);
   });
 }
+
+els.btnClearReview.addEventListener('click', () => {
+  bozzaRiconosciuti = [];
+  renderReview();
+  els.voiceReview.classList.add('hidden');
+});
 
 els.btnSaveAll.addEventListener('click', () => {
   const validi = bozzaRiconosciuti.filter(p => p.nome && p.scadenza);
