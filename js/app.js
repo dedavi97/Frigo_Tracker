@@ -156,6 +156,7 @@ function renderLista() {
         <p class="product-meta">
           <span>Scade ${formattaData(scadenzaAttiva(p))}</span>
           ${p.aperto ? `<span class="tag-aperto">Aperto</span>` : ''}
+          ${p.scadenzaStimata ? `<span class="tag-stima">Stima</span>` : ''}
           ${p.motivo ? `<span class="tag-motivo">${escapeHtml(p.motivo)}</span>` : ''}
         </p>
       </div>`;

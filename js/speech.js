@@ -39,6 +39,24 @@ const DATA_REGEX = new RegExp(
   'gi'
 );
 
+// Per prodotti senza una data stampata (es. verdura fresca): invece di una
+// data esatta, una durata approssimativa da oggi ("tra una settimana", "tra
+// tre giorni"). "un"/"una" non sono in NUMERI_PAROLA (lì non avrebbero senso
+// per un giorno del mese), qui invece sono l'unico modo naturale di dire 1.
+const UNITA_DURATA = { giorno: 1, giorni: 1, settimana: 7, settimane: 7 };
+const NUMERI_DURATA = Object.assign({ un: 1, una: 1 }, NUMERI_PAROLA);
+const NOME_NUMERO_DURATA = Object.keys(NUMERI_DURATA).concat(['\\d{1,2}']).join('|');
+const NOME_UNITA_DURATA = Object.keys(UNITA_DURATA).join('|');
+const DURATA_REGEX = new RegExp(
+  `\\btra\\s+(${NOME_NUMERO_DURATA})\\s+(${NOME_UNITA_DURATA})\\b`,
+  'gi'
+);
+
+function numeroDurataDaTesto(token) {
+  if (/^\d{1,2}$/.test(token)) return parseInt(token, 10);
+  return NUMERI_DURATA[token.toLowerCase()] || null;
+}
+
 function pulisciTesto(t) {
   return t
     .replace(/[.,;:!?]/g, ' ')
@@ -75,17 +93,48 @@ function dataISO(giornoNum, meseNum, annoOpz) {
   return `${anno}-${mm}-${dd}`;
 }
 
+// dataLocaleISO/oggiISO sono definite in storage.js, caricato prima di
+// questo file: le riusiamo per restare coerenti col resto dell'app (mai
+// toISOString(), vedi il bug di fuso orario corretto in js/storage.js).
+function dataDaOggiPiuGiorni(giorni) {
+  const d = new Date();
+  d.setDate(d.getDate() + giorni);
+  return dataLocaleISO(d);
+}
+
 /**
  * Analizza il testo dettato ed estrae una lista di prodotti.
  * Formato atteso per elemento: "<prodotto> <giorno> <mese> [per <motivo>]"
- * Più elementi si separano dicendo "poi" (o "quindi"/"virgola") tra un
- * prodotto e l'altro.
+ * (o, per prodotti senza data stampata, "<prodotto> tra <numero> giorni/
+ * settimane [per <motivo>]"). Più elementi si separano dicendo "poi" (o
+ * "quindi"/"virgola") tra un prodotto e l'altro.
  */
 function parseTranscript(testoGrezzo) {
   const testo = rimuoviParoleIniziali(pulisciTesto(testoGrezzo));
   if (!testo) return [];
 
-  const match = [...testo.matchAll(DATA_REGEX)];
+  // Due tipi di "ancora" possibili per ogni prodotto (data esatta o durata
+  // stimata): si cercano entrambi, poi si uniscono in ordine di comparsa nel
+  // testo così lo stesso ciclo qui sotto può estrarre nome/motivo attorno a
+  // ciascuna, indipendentemente dal tipo.
+  const ancoreData = [...testo.matchAll(DATA_REGEX)].map(m => ({
+    index: m.index,
+    lunghezza: m[0].length,
+    tipo: 'data',
+    giornoNum: numeroDaTesto(m[1]),
+    meseNum: MESI[m[2].toLowerCase()],
+    anno: m[3]
+  }));
+
+  const ancoreDurata = [...testo.matchAll(DURATA_REGEX)].map(m => ({
+    index: m.index,
+    lunghezza: m[0].length,
+    tipo: 'durata',
+    numero: numeroDurataDaTesto(m[1]),
+    unita: m[2].toLowerCase()
+  }));
+
+  const match = ancoreData.concat(ancoreDurata).sort((a, b) => a.index - b.index);
   if (match.length === 0) return [];
 
   const risultati = [];
@@ -93,16 +142,13 @@ function parseTranscript(testoGrezzo) {
 
   for (let i = 0; i < match.length; i++) {
     const m = match[i];
-    const giornoNum = numeroDaTesto(m[1]);
-    const meseNum = MESI[m[2].toLowerCase()];
-    const anno = m[3];
 
     const nomeGrezzo = nomeInAttesa;
     nomeInAttesa = '';
 
-    const fineData = m.index + m[0].length;
+    const fineAncora = m.index + m.lunghezza;
     const prossimoInizio = (i + 1 < match.length) ? match[i + 1].index : testo.length;
-    const spanIntermedio = testo.slice(fineData, prossimoInizio).trim();
+    const spanIntermedio = testo.slice(fineAncora, prossimoInizio).trim();
 
     let motivo = '';
     let resto = spanIntermedio;
@@ -125,11 +171,22 @@ function parseTranscript(testoGrezzo) {
     }
 
     const nomePulito = rimuoviArticoloFinale(nomeGrezzo.replace(SEPARATORI, '').trim());
+    if (!nomePulito) continue;
 
-    if (giornoNum && meseNum && nomePulito) {
+    if (m.tipo === 'data') {
+      if (!m.giornoNum || !m.meseNum) continue;
       risultati.push({
         nome: capitalizza(nomePulito),
-        scadenza: dataISO(giornoNum, meseNum, anno),
+        scadenza: dataISO(m.giornoNum, m.meseNum, m.anno),
+        motivo: capitalizza(motivo)
+      });
+    } else {
+      if (!m.numero) continue;
+      const giorni = m.numero * UNITA_DURATA[m.unita];
+      risultati.push({
+        nome: capitalizza(nomePulito),
+        scadenza: dataDaOggiPiuGiorni(giorni),
+        scadenzaStimata: true,
         motivo: capitalizza(motivo)
       });
     }

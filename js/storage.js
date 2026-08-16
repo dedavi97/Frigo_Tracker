@@ -224,7 +224,8 @@ const Storage = {
       acquisto: prodotto.acquisto || oggiISO(),
       motivo: prodotto.motivo || '',
       note: prodotto.note || '',
-      stato: 'attivo'                     // attivo | consumato | eliminato
+      stato: 'attivo',                    // attivo | consumato | eliminato
+      scadenzaStimata: !!prodotto.scadenzaStimata  // true se calcolata da "tra N giorni/settimane" invece di una data esatta
     };
     this._salvaProdotto(nuovo);
     return nuovo;

@@ -18,6 +18,8 @@ App web (PWA) per tenere traccia delle scadenze di frigo e dispensa tramite coma
 
 I prodotti compaiono in home ordinati per scadenza, con un anello colorato che indica quanto manca (verde: tranquillo, ambra: entro 7 giorni, rosso: entro 2 giorni o scaduto). Se un prodotto dura meno una volta aperto, "Segna come aperto" nel dettaglio fa ricalcolare la scadenza mostrata sulla durata che indichi tu, invece di quella stampata sulla confezione.
 
+Per prodotti senza una data stampata (es. verdura fresca), invece della data di' una durata approssimativa: "verdura tra una settimana". Compare comunque con l'anello colorato come gli altri, con un'etichetta "Stima" a ricordarti che la data è approssimativa.
+
 Eliminare o consumare un prodotto non lo cancella per sempre: resta nel filtro "Storico" per 24 ore, con un tasto per ripristinarlo in caso di errore.
 
 ## Account e sincronizzazione (opzionale)
@@ -72,6 +74,7 @@ Frigo_Tracker/
 
 ## Changelog
 
+- **v1.5.2** — Prodotti senza data stampata (es. verdura): scadenza stimata dicendo "tra N giorni/settimane" invece di una data esatta, riconosciuta anche a voce/testo. "Segna come aperto" ora precompila 7 giorni di default. Il prompt di sync mostra i prodotti trovati invece di chiedere conferma alla cieca.
 - **v1.5.0** — Sync robusta tra Firestore e dati locali: al login non si perdono più prodotti aggiunti offline o su un dispositivo non ancora sincronizzato; conflitti risolti automaticamente in base a chi ha la modifica più recente.
 - **v1.4.0** — Prodotto "aperto": indichi quanti giorni dura una volta aperto, la scadenza mostrata (colore, ordinamento) si aggiorna di conseguenza, quella originale resta comunque salvata.
 - **v1.3.0** — Storico di prodotti eliminati/consumati, con possibilità di ripristino entro 24 ore.

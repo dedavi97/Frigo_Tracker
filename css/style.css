@@ -193,6 +193,13 @@ h1, h2, h3 {
   color: var(--warn);
   font-weight: 600;
 }
+.product-meta .tag-stima {
+  background: transparent;
+  padding: 1px 8px;
+  border-radius: 999px;
+  color: var(--text-faint);
+  border: 1px solid var(--border);
+}
 
 .storico-badge {
   flex-shrink: 0;
