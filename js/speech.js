@@ -13,6 +13,7 @@ const MESI = {
 };
 
 const NUMERI_PAROLA = {
+  primo: 1, // "il primo settembre" è il modo naturale di dire il giorno 1, non "uno settembre"
   uno: 1, due: 2, tre: 3, quattro: 4, cinque: 5, sei: 6, sette: 7, otto: 8,
   nove: 9, dieci: 10, undici: 11, dodici: 12, tredici: 13, quattordici: 14,
   quindici: 15, sedici: 16, diciassette: 17, diciotto: 18, diciannove: 19,
@@ -47,6 +48,13 @@ function pulisciTesto(t) {
 
 function rimuoviParoleIniziali(t) {
   return t.replace(/^\s*(allora|dunque|ok|okay|ecco)\s+/i, '').trim();
+}
+
+// Toglie un articolo residuo attaccato alla fine del nome prodotto, che resta
+// lì quando si parla in modo naturale prima della data (es. "hummus il
+// tredici settembre" → il nome grezzo prima della data è "hummus il").
+function rimuoviArticoloFinale(t) {
+  return t.replace(/\s+(il|lo|la|i|gli|le|l')$/i, '').trim();
 }
 
 function dataISO(giornoNum, meseNum, annoOpz) {
@@ -116,7 +124,7 @@ function parseTranscript(testoGrezzo) {
       nomeInAttesa = spanIntermedio.replace(SEPARATORI, '').trim();
     }
 
-    const nomePulito = nomeGrezzo.replace(SEPARATORI, '').trim();
+    const nomePulito = rimuoviArticoloFinale(nomeGrezzo.replace(SEPARATORI, '').trim());
 
     if (giornoNum && meseNum && nomePulito) {
       risultati.push({

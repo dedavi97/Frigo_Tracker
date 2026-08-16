@@ -27,6 +27,14 @@ Dati salvati in localStorage di default; login opzionale con Google che attiva s
 7. Interfaccia dedicata per PC e per telefono, con passaggio automatico in base al dispositivo (oggi c'è un solo layout responsive, vedi `css/style.css`)
 8. Aggiunta prodotti anche tramite testo scritto, non solo a voce (icona aggiuntiva accanto al microfono, stesso flusso di revisione/parsing già esistente)
 
+## Funzionalità pianificate (decise con l'utente, non ancora implementate)
+Da implementare **nell'ordine seguente**: la Feature "Sync robusta" è la più delicata (rischio di conflitti/perdita dati) e va fatta e testata da sola prima di aggiungere le altre tre nella stessa sessione, per non confondere eventuali bug di sync con bug di funzionalità nuove.
+
+1. **Sync robusta Firebase↔locale** (estende quanto già implementato in `js/storage.js`): confronto solo all'apertura app/login, non periodico. Conflitto sullo stesso prodotto: campo "ultima modifica" su ogni prodotto, vince automaticamente il più recente senza chiedere conferma. Prodotto solo su Firebase → scaricato in automatico. Prodotto solo in locale → chiede conferma (unica, in blocco per tutti i prodotti "solo locali" insieme, non uno per uno). Cancellazioni: mai silenziose, serve un record leggero di cancellazione (tombstone: solo ID + data) così la sync distingue "cancellato, propaga la cancellazione" da "nuovo, scarica"; tombstone tenuti 30 giorni (a differenza dello storico visibile sotto, che dura solo 24 ore — non confondere le due scadenze).
+2. **Storico eliminati/consumati con ripristino**: lista unica (non due separate), stato distinguibile a colpo d'occhio per riga. Ripristino riporta a "attivo" senza gestioni speciali (anche se la scadenza è nel frattempo passata). Visibile per 24 ore dal cambio stato, poi sparisce dalla vista (ma il tombstone della Feature 1 resta più a lungo, sono due cose diverse).
+3. **Prodotto "aperto"**: azione "Segna come aperto" nel dettaglio, con durata-dopo-apertura inserita manualmente dall'utente (niente default automatici per categoria). Da quel momento la scadenza "attiva" (colore, ordinamento, home) diventa data-apertura + durata; la scadenza originale resta salvata ma non è più quella mostrata. L'anello colorato ricalibra la sua scala sulla nuova finestra invece dei 14 giorni fissi usati oggi in `creaAnello()` (`js/app.js`), così un prodotto aperto con 2 giorni di vita non sembra sempre "quasi finito" sulla stessa scala di uno mai aperto.
+4. **Pagina aiuto/about**: icona "?" in home accanto al microfono. Contenuto: cos'è l'app, come si usa (esempio frase vocale, campo motivo, "segna come aperto"), legenda colori anello, elenco funzioni della versione corrente, numero versione (`APP_VERSION`).
+
 ## Convenzioni utente (valide per tutti i suoi progetti)
 1. Nomi progetti: PascalCase con underscore (es. Frigo_Tracker)
 2. Tema scuro moderno sempre, priorità a UI/UX curata
