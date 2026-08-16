@@ -64,8 +64,6 @@ const els = {
   toast: document.getElementById('toast')
 };
 
-const MIGRAZIONE_CHIESTA_KEY = 'frigo_tracker_migrazione_chiesta';
-
 let filtroAttivo = 'tutti';
 let idProdottoInModifica = null;
 let bozzaRiconosciuti = [];
@@ -532,18 +530,17 @@ els.btnLogout.addEventListener('click', () => {
   mostraToast('Disconnesso');
 });
 
-/* ---------------- Migrazione dati locali ---------------- */
+/* ---------------- Prodotti solo locali in attesa di conferma ---------------- */
 
 els.btnMigraSi.addEventListener('click', () => {
-  Storage.migraDatiLocaliSuCloud()
+  Storage.confermaCaricamentoSoloLocali()
     .then(() => mostraToast('Dati caricati nel tuo account'))
     .catch(() => mostraToast('Errore durante il caricamento, riprova più tardi'));
-  localStorage.setItem(MIGRAZIONE_CHIESTA_KEY, '1');
   els.viewMigrazione.classList.add('hidden');
 });
 
 els.btnMigraNo.addEventListener('click', () => {
-  localStorage.setItem(MIGRAZIONE_CHIESTA_KEY, '1');
+  Storage.rifiutaCaricamentoSoloLocali();
   els.viewMigrazione.classList.add('hidden');
 });
 
@@ -561,14 +558,10 @@ function mostraToast(msg) {
 
 document.getElementById('app-version').textContent = APP_VERSION;
 
-Auth.onChange((utente) => {
-  aggiornaViewAccount();
-  if (utente && Storage.haDatiLocaliDaMigrare() && !localStorage.getItem(MIGRAZIONE_CHIESTA_KEY)) {
-    els.viewMigrazione.classList.remove('hidden');
-  }
-});
+Auth.onChange(() => aggiornaViewAccount());
 
 Storage.onChange(renderLista);
+Storage.onDatiSoloLocali(() => els.viewMigrazione.classList.remove('hidden'));
 Storage.init();
 try {
   Auth.init();
