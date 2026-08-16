@@ -142,20 +142,33 @@ const Storage = {
     return aggiornato;
   },
 
+  // cambiatoIl traccia quando lo stato è cambiato l'ultima volta: serve a
+  // getStorico() per sapere quali eliminati/consumati sono ancora "recenti"
+  // (visibili nello storico) e quali no.
   segnaStato(id, stato) {
-    return this.aggiorna(id, { stato });
+    return this.aggiorna(id, { stato, cambiatoIl: new Date().toISOString() });
   },
 
+  // Eliminazione "morbida": il prodotto non sparisce subito per sempre, resta
+  // recuperabile dallo storico (vedi getStorico/ripristina) coerentemente con
+  // il principio "nessuna eliminazione diretta senza conferma/possibilità di
+  // tornare indietro" già seguito altrove nell'app.
   elimina(id) {
-    this._cache = this._cache.filter(p => p.id !== id);
-    this._notifica();
+    return this.segnaStato(id, 'eliminato');
+  },
 
-    if (this._modalita === 'cloud') {
-      this._collezioneCloud().doc(id).delete()
-        .catch(e => console.error('Errore eliminazione cloud', e));
-    } else {
-      this._scriviLocale(this._prodottiLocaliGrezzi().filter(p => p.id !== id));
-    }
+  ripristina(id) {
+    return this.segnaStato(id, 'attivo');
+  },
+
+  // Prodotti consumati/eliminati nelle ultime 24 ore: oltre sparisce dalla
+  // vista (ma il dato resta comunque salvato, non viene mai cancellato per
+  // davvero da qui).
+  getStorico() {
+    const soglia = Date.now() - 24 * 60 * 60 * 1000;
+    return this._cache.filter(p =>
+      p.stato !== 'attivo' && p.cambiatoIl && new Date(p.cambiatoIl).getTime() >= soglia
+    );
   },
 
   // Aggiornamento ottimistico della cache (uguale in entrambe le modalità,

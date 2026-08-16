@@ -187,6 +187,17 @@ h1, h2, h3 {
   color: var(--text);
 }
 
+.storico-badge {
+  flex-shrink: 0;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.storico-badge.consumato { background: var(--fresh-bg); color: var(--fresh); }
+.storico-badge.eliminato { background: var(--surface-2); color: var(--text-dim); border: 1px solid var(--border); }
+
 .status-fresh .ring-progress { stroke: var(--fresh); }
 .status-fresh .ring-days { color: var(--fresh); }
 .status-warn .ring-progress { stroke: var(--warn); }

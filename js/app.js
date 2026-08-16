@@ -31,6 +31,7 @@ const els = {
   fNote: document.getElementById('f-note'),
   btnConsumato: document.getElementById('btn-consumato'),
   btnElimina: document.getElementById('btn-elimina'),
+  btnRipristina: document.getElementById('btn-ripristina'),
 
   btnHelp: document.getElementById('btn-help'),
   viewHelp: document.getElementById('view-help'),
@@ -101,6 +102,11 @@ function creaAnello(giorni, stato) {
 }
 
 function renderLista() {
+  if (filtroAttivo === 'storico') {
+    renderStorico();
+    return;
+  }
+
   const tutti = Storage.getAttivi();
 
   const filtrati = tutti.filter(p => {
@@ -111,6 +117,8 @@ function renderLista() {
   });
 
   els.emptyState.classList.toggle('hidden', tutti.length > 0);
+  els.emptyState.querySelector('h2').textContent = 'Dispensa vuota';
+  els.emptyState.querySelector('p').textContent = 'Tocca il microfono in alto e inizia a elencare cosa hai comprato.';
   els.list.innerHTML = '';
 
   filtrati.forEach(p => {
@@ -125,6 +133,33 @@ function renderLista() {
         <p class="product-name">${escapeHtml(p.nome)}</p>
         <p class="product-meta">
           <span>Scade ${formattaData(p.scadenza)}</span>
+          ${p.motivo ? `<span class="tag-motivo">${escapeHtml(p.motivo)}</span>` : ''}
+        </p>
+      </div>`;
+    li.addEventListener('click', () => apriDettaglio(p.id));
+    els.list.appendChild(li);
+  });
+}
+
+function renderStorico() {
+  const storico = Storage.getStorico();
+
+  els.emptyState.classList.toggle('hidden', storico.length > 0);
+  els.emptyState.querySelector('h2').textContent = 'Storico vuoto';
+  els.emptyState.querySelector('p').textContent = 'I prodotti consumati o eliminati restano qui per 24 ore, con la possibilità di ripristinarli.';
+  els.list.innerHTML = '';
+
+  storico.forEach(p => {
+    const etichetta = p.stato === 'consumato' ? 'Consumato' : 'Eliminato';
+    const li = document.createElement('li');
+    li.className = 'product-card';
+    li.dataset.id = p.id;
+    li.innerHTML = `
+      <div class="storico-badge ${p.stato}">${etichetta}</div>
+      <div class="product-info">
+        <p class="product-name">${escapeHtml(p.nome)}</p>
+        <p class="product-meta">
+          <span>Scadenza ${formattaData(p.scadenza)}</span>
           ${p.motivo ? `<span class="tag-motivo">${escapeHtml(p.motivo)}</span>` : ''}
         </p>
       </div>`;
@@ -297,6 +332,12 @@ function apriDettaglio(id) {
   els.fAcquisto.value = p.acquisto || '';
   els.fMotivo.value = p.motivo || '';
   els.fNote.value = p.note || '';
+
+  const attivo = p.stato === 'attivo';
+  els.btnConsumato.classList.toggle('hidden', !attivo);
+  els.btnElimina.classList.toggle('hidden', !attivo);
+  els.btnRipristina.classList.toggle('hidden', attivo);
+
   els.viewDetail.classList.remove('hidden');
 }
 
@@ -328,9 +369,16 @@ els.btnConsumato.addEventListener('click', () => {
 
 els.btnElimina.addEventListener('click', () => {
   if (!idProdottoInModifica) return;
-  if (!confirm('Eliminare definitivamente questo prodotto?')) return;
+  if (!confirm('Eliminare questo prodotto? Potrai ripristinarlo dallo storico per le prossime 24 ore.')) return;
   Storage.elimina(idProdottoInModifica);
   mostraToast('Prodotto eliminato');
+  chiudiDettaglio();
+});
+
+els.btnRipristina.addEventListener('click', () => {
+  if (!idProdottoInModifica) return;
+  Storage.ripristina(idProdottoInModifica);
+  mostraToast('Prodotto ripristinato');
   chiudiDettaglio();
 });
 
