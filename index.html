@@ -24,6 +24,12 @@
       <button id="btn-account" class="btn-icon" title="Account" aria-label="Account">
         <svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z" fill="currentColor"/></svg>
       </button>
+      <button id="btn-help" class="btn-icon" title="Aiuto" aria-label="Aiuto">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-13c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z" fill="currentColor"/></svg>
+      </button>
+      <button id="btn-add-text" class="btn-icon" title="Aggiungi per testo" aria-label="Aggiungi per testo">
+        <svg viewBox="0 0 24 24" width="19" height="19"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor"/></svg>
+      </button>
       <button id="btn-add" class="btn-icon" title="Registra a voce" aria-label="Registra a voce">
         <svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12h-2Z" fill="currentColor"/></svg>
       </button>
@@ -48,10 +54,10 @@
     <footer class="app-footer">v<span id="app-version"></span></footer>
   </main>
 
-  <!-- Overlay registrazione vocale -->
+  <!-- Overlay aggiunta prodotto (voce o testo) -->
   <section id="view-voice" class="overlay hidden">
     <div class="overlay-header">
-      <h2>Registrazione vocale</h2>
+      <h2>Aggiungi prodotto</h2>
       <button id="btn-close-voice" class="btn-icon" aria-label="Chiudi">
         <svg viewBox="0 0 24 24" width="22" height="22"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
       </button>
@@ -65,6 +71,12 @@
       <p id="mic-status" class="mic-status">Tocca per iniziare a parlare</p>
       <p id="mic-hint" class="mic-hint">Esempio: "yogurt diciotto marzo per la torta, salmone ventuno luglio". Puoi toccare di nuovo il microfono per aggiungere altri prodotti alla lista qui sotto.</p>
       <div id="live-transcript" class="live-transcript" aria-live="polite"></div>
+
+      <div class="text-entry">
+        <p class="text-entry-label">Oppure scrivi:</p>
+        <textarea id="text-input" rows="2" placeholder='Es. "yogurt diciotto marzo per la torta"'></textarea>
+        <button id="btn-analizza-testo" type="button" class="btn-secondary">Analizza testo</button>
+      </div>
     </div>
 
     <div id="voice-review" class="voice-review hidden">
@@ -129,6 +141,48 @@
         <p>I tuoi dati sono sincronizzati su tutti i dispositivi.</p>
         <button id="btn-logout" class="btn-secondary">Esci</button>
       </div>
+    </div>
+  </section>
+
+  <!-- Overlay aiuto -->
+  <section id="view-help" class="overlay hidden">
+    <div class="overlay-header">
+      <h2>Come funziona</h2>
+      <button id="btn-close-help" class="btn-icon" aria-label="Chiudi">
+        <svg viewBox="0 0 24 24" width="22" height="22"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="help-body">
+      <section>
+        <h3>Cos'è Frigo Tracker</h3>
+        <p>Tiene traccia delle scadenze di frigo e dispensa. Aggiungi i prodotti a voce o scrivendoli, e l'app ti avvisa quando stanno per scadere.</p>
+      </section>
+      <section>
+        <h3>Come si aggiunge un prodotto</h3>
+        <p>Tocca il microfono e di' cosa hai comprato, nel formato "prodotto, giorno, mese", con il motivo opzionale dopo "per". Esempio:</p>
+        <p class="help-example">"yogurt diciotto marzo per la torta, poi salmone ventuno luglio"</p>
+        <p>Puoi separare più prodotti dicendo "poi", "quindi" o facendo una virgola. In alternativa alla voce, puoi scrivere la stessa frase con l'icona accanto al microfono.</p>
+        <p>Prima di salvare, controlla sempre la lista riconosciuta: puoi correggere nome, data e motivo di ogni prodotto, oppure toccare di nuovo il microfono per aggiungerne altri.</p>
+      </section>
+      <section>
+        <h3>I colori dell'anello</h3>
+        <ul class="help-legend">
+          <li><span class="legend-dot status-fresh"></span> Verde: scadenza tranquilla</li>
+          <li><span class="legend-dot status-warn"></span> Ambra: scade entro 7 giorni</li>
+          <li><span class="legend-dot status-urgent"></span> Rosso: scade entro 2 giorni, o è già scaduto</li>
+        </ul>
+        <p>Il numero al centro indica i giorni rimanenti.</p>
+      </section>
+      <section>
+        <h3>Funzioni disponibili</h3>
+        <ul class="help-features">
+          <li>Aggiunta prodotti a voce o per testo</li>
+          <li>Motivo d'acquisto opzionale</li>
+          <li>Modifica, segna come consumato o elimina ogni prodotto</li>
+          <li>Account Google opzionale con sincronizzazione tra dispositivi</li>
+        </ul>
+      </section>
+      <p class="help-version">Versione app: <span id="help-version"></span></p>
     </div>
   </section>
 

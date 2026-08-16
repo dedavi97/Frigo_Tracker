@@ -8,11 +8,14 @@ const els = {
   filterRow: document.querySelector('.filter-row'),
 
   btnAdd: document.getElementById('btn-add'),
+  btnAddText: document.getElementById('btn-add-text'),
   viewVoice: document.getElementById('view-voice'),
   btnCloseVoice: document.getElementById('btn-close-voice'),
   btnMic: document.getElementById('btn-mic'),
   micStatus: document.getElementById('mic-status'),
   liveTranscript: document.getElementById('live-transcript'),
+  textInput: document.getElementById('text-input'),
+  btnAnalizzaTesto: document.getElementById('btn-analizza-testo'),
   voiceReview: document.getElementById('voice-review'),
   reviewList: document.getElementById('review-list'),
   btnClearReview: document.getElementById('btn-clear-review'),
@@ -28,6 +31,11 @@ const els = {
   fNote: document.getElementById('f-note'),
   btnConsumato: document.getElementById('btn-consumato'),
   btnElimina: document.getElementById('btn-elimina'),
+
+  btnHelp: document.getElementById('btn-help'),
+  viewHelp: document.getElementById('view-help'),
+  btnCloseHelp: document.getElementById('btn-close-help'),
+  helpVersion: document.getElementById('help-version'),
 
   btnAccount: document.getElementById('btn-account'),
   viewAccount: document.getElementById('view-account'),
@@ -145,6 +153,10 @@ els.filterRow.addEventListener('click', (e) => {
 /* ---------------- Overlay voce ---------------- */
 
 els.btnAdd.addEventListener('click', apriVoce);
+els.btnAddText.addEventListener('click', () => {
+  apriVoce();
+  els.textInput.focus();
+});
 els.btnCloseVoice.addEventListener('click', chiudiVoce);
 
 function apriVoce() {
@@ -152,6 +164,7 @@ function apriVoce() {
   els.voiceReview.classList.add('hidden');
   els.reviewList.innerHTML = '';
   els.liveTranscript.textContent = '';
+  els.textInput.value = '';
   els.micStatus.textContent = 'Tocca per iniziare a parlare';
   els.btnMic.classList.remove('is-listening');
   els.viewVoice.classList.remove('hidden');
@@ -163,6 +176,13 @@ function apriVoce() {
     els.btnMic.disabled = false;
   }
 }
+
+els.btnAnalizzaTesto.addEventListener('click', () => {
+  const testo = els.textInput.value.trim();
+  if (!testo) return;
+  elaboraTrascrizione(testo);
+  els.textInput.value = '';
+});
 
 function chiudiVoce() {
   SpeechEngine.stop();
@@ -313,6 +333,14 @@ els.btnElimina.addEventListener('click', () => {
   mostraToast('Prodotto eliminato');
   chiudiDettaglio();
 });
+
+/* ---------------- Aiuto ---------------- */
+
+els.btnHelp.addEventListener('click', () => {
+  els.helpVersion.textContent = APP_VERSION;
+  els.viewHelp.classList.remove('hidden');
+});
+els.btnCloseHelp.addEventListener('click', () => els.viewHelp.classList.add('hidden'));
 
 /* ---------------- Account ---------------- */
 
