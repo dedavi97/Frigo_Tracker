@@ -41,18 +41,16 @@ Limitazioni note:
 1. Un solo contenitore generico (nessuna distinzione frigo/dispensa/freezer)
 2. Notifiche solo visive nell'app (nessuna notifica push reale, anche ad app chiusa)
 3. Il parsing è basato su regole, non su AI: può sbagliare con frasi complesse, per questo c'è sempre un passaggio di controllo prima di salvare
-4. La sincronizzazione tra account e dati locali è ancora semplice (confronto solo all'apertura, senza gestione robusta dei conflitti tra dispositivi)
 
 ## Backlog (prossime iterazioni)
 
-1. Sync robusta tra Firebase e dati locali (gestione conflitti, cancellazioni)
-2. Interfaccia dedicata per PC e per telefono, con passaggio automatico in base al dispositivo
-3. Notifiche push vere (anche ad app chiusa)
-4. Luoghi configurabili (frigo, dispensa, freezer, altro)
-5. Analytics: cosa si compra più spesso, cosa scade più spesso
-6. Inventario live (tracciamento anche di ciò che esce, non solo entra)
-7. Integrazione Google Calendar
-8. Notifiche configurabili (quanti giorni prima avvisare)
+1. Interfaccia dedicata per PC e per telefono, con passaggio automatico in base al dispositivo
+2. Notifiche push vere (anche ad app chiusa)
+3. Luoghi configurabili (frigo, dispensa, freezer, altro)
+4. Analytics: cosa si compra più spesso, cosa scade più spesso
+5. Inventario live (tracciamento anche di ciò che esce, non solo entra)
+6. Integrazione Google Calendar
+7. Notifiche configurabili (quanti giorni prima avvisare)
 
 ## Struttura del progetto
 
@@ -71,3 +69,18 @@ Frigo_Tracker/
   icons/                            icone dell'app
   run.bat                            avvio rapido da Windows
 ```
+
+## Changelog
+
+- **v1.5.0** — Sync robusta tra Firestore e dati locali: al login non si perdono più prodotti aggiunti offline o su un dispositivo non ancora sincronizzato; conflitti risolti automaticamente in base a chi ha la modifica più recente.
+- **v1.4.0** — Prodotto "aperto": indichi quanti giorni dura una volta aperto, la scadenza mostrata (colore, ordinamento) si aggiorna di conseguenza, quella originale resta comunque salvata.
+- **v1.3.0** — Storico di prodotti eliminati/consumati, con possibilità di ripristino entro 24 ore.
+- **v1.2.0** — Pagina aiuto in app (icona "?"); aggiunta prodotti anche scrivendo, non solo a voce.
+- **v1.1.4** — Toccare di nuovo il microfono con una lista già riconosciuta ora aggiunge invece di sostituire; aggiunto un tasto "Cancella tutto"; risolti blocchi occasionali del microfono dopo pause lunghe.
+- **v1.1.3** — Il parser riconosce "primo" del mese (non solo "uno"); non lascia più articoli (il/lo/la/i/gli/le) attaccati al nome del prodotto.
+- **v1.1.2** — Messaggio d'errore di login più chiaro in caso di problemi.
+- **v1.1.1** — Login opzionale con Google e sincronizzazione multi-dispositivo (Firestore); dati locali esistenti migrabili al primo accesso.
+- **v1.0.5** — Più modi naturali per separare i prodotti a voce ("e poi", "poi anche", "e quindi", oltre a "poi"/"quindi"/virgola).
+- **v1.0.4** — Risolto un bug che duplicava a valanga il testo dettato su Android (bug noto dell'ascolto continuo del browser).
+- **v1.0.3** — Risolto un bug che bloccava gli aggiornamenti sui dispositivi già installati (cache del service worker rimasta vecchia); aggiunto il numero di versione visibile in fondo alla pagina.
+- **Prime versioni** — Risolti i percorsi CSS/JS rotti (il sito appariva senza stile e il microfono non rispondeva) e una prima duplicazione del testo dettato.
