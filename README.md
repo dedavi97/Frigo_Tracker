@@ -76,6 +76,7 @@ Frigo_Tracker/
 
 ## Changelog
 
+- **v2.0.2** — Pagina aiuto riordinata (l'introduzione era finita in fondo per errore) e ampliata con sezioni dedicate per filtri, prodotto "aperto"/scadenza stimata, storico e account, prima solo accennate in un elenco puntato finale.
 - **v2.0.1** — Aggiunta l'icona dell'app (`icons/icon-192.png`, `icons/icon-512.png`): frigo a contorno neon verde con una foglia, prima mancante (installazione PWA senza icona propria).
 - **v2.0.0** — Restyle grafico: font Baloo 2 + Nunito, palette più satura, header senza pulsanti microfono/testo/pillola account (sostituiti da un avatar account e da un pulsante "+" flottante in basso, unico punto di ingresso per aggiungere un prodotto). Corretto un bug di layout presente da sempre su desktop (header e lista non si impilavano correttamente).
 - **v1.5.6** — Pagina aiuto e changelog allineati alle funzionalità delle versioni precedenti (+7 giorni, età apertura, redesign a schede), mancavano dai testi.

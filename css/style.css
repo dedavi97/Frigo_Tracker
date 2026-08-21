@@ -471,7 +471,7 @@ h1, h2, h3 {
   color: var(--text) !important;
   font-style: italic;
 }
-.help-legend, .help-features {
+.help-legend {
   list-style: none;
   margin: 0;
   padding: 0;
@@ -481,7 +481,6 @@ h1, h2, h3 {
   font-size: 13.5px;
   color: var(--text-dim);
 }
-.help-features li::before { content: "•  "; color: var(--fresh); }
 .legend-dot {
   display: inline-block;
   width: 10px;
