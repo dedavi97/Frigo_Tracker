@@ -76,6 +76,8 @@ Frigo_Tracker/
 
 ## Changelog
 
+- **v1.5.5** — Schermata di aggiunta prodotto riorganizzata a schede (Vocale/Testo/Linea consumo, un pannello alla volta) invece di tutto impilato: meno affollata, la lista di revisione si vede meglio.
+- **v1.5.4** — La linea di consumo si imposta ora dalla schermata di aggiunta prodotto invece che dalla pagina aiuto.
 - **v1.5.3** — Tasto "+7 giorni" per prodotti "aperto" e a scadenza stimata (allunga la scadenza senza ricalcolare a mano). Riga discreta "Aperto da N giorni" nel dettaglio. Nuova "linea di consumo": data impostabile dalla pagina aiuto, separa in home cosa consumare con priorità da tutto il resto (solo visivo).
 - **v1.5.2** — Prodotti senza data stampata (es. verdura): scadenza stimata dicendo "tra N giorni/settimane" invece di una data esatta, riconosciuta anche a voce/testo. "Segna come aperto" ora precompila 7 giorni di default. Il prompt di sync mostra i prodotti trovati invece di chiedere conferma alla cieca.
 - **v1.5.0** — Sync robusta tra Firestore e dati locali: al login non si perdono più prodotti aggiunti offline o su un dispositivo non ancora sincronizzato; conflitti risolti automaticamente in base a chi ha la modifica più recente.

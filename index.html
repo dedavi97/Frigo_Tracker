@@ -65,22 +65,30 @@
     </div>
 
     <div class="voice-stage">
-      <button id="btn-mic" class="mic-button" aria-label="Avvia/ferma ascolto">
-        <svg viewBox="0 0 24 24" width="34" height="34"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12h-2Z" fill="currentColor"/></svg>
-        <span class="mic-ring"></span>
-      </button>
-      <p id="mic-status" class="mic-status">Tocca per iniziare a parlare</p>
-      <p id="mic-hint" class="mic-hint">Esempio: "yogurt diciotto marzo per la torta, salmone ventuno luglio". Senza data stampata: "verdura tra una settimana". Puoi toccare di nuovo il microfono per aggiungere altri prodotti alla lista qui sotto.</p>
-      <div id="live-transcript" class="live-transcript" aria-live="polite"></div>
+      <div class="add-mode-row">
+        <button type="button" class="chip is-active" data-modo="vocale">Vocale</button>
+        <button type="button" class="chip" data-modo="testo">Testo</button>
+        <button type="button" class="chip" data-modo="linea">Linea consumo</button>
+      </div>
 
-      <div class="text-entry">
-        <p class="text-entry-label">Oppure scrivi:</p>
-        <textarea id="text-input" rows="2" placeholder='Es. "yogurt diciotto marzo per la torta"'></textarea>
+      <p id="add-example" class="add-example">Es. "yogurt 18 marzo per la torta" — senza data: "verdura tra una settimana"</p>
+
+      <div id="pannello-vocale" class="add-panel">
+        <button id="btn-mic" class="mic-button" aria-label="Avvia/ferma ascolto">
+          <svg viewBox="0 0 24 24" width="34" height="34"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12h-2Z" fill="currentColor"/></svg>
+          <span class="mic-ring"></span>
+        </button>
+        <p id="mic-status" class="mic-status">Tocca per iniziare a parlare</p>
+        <div id="live-transcript" class="live-transcript" aria-live="polite"></div>
+      </div>
+
+      <div id="pannello-testo" class="add-panel hidden">
+        <textarea id="text-input" rows="3" placeholder='Scrivi cosa hai comprato...'></textarea>
         <button id="btn-analizza-testo" type="button" class="btn-secondary">Analizza testo</button>
       </div>
 
-      <div class="text-entry">
-        <p class="text-entry-label">Linea di consumo (separa in home cosa consumare con priorità):</p>
+      <div id="pannello-linea" class="add-panel hidden">
+        <p class="add-panel-label">I prodotti che scadono prima di questa data vengono separati in home, da consumare con priorità.</p>
         <div class="linea-consumo-form">
           <input type="date" id="f-linea-consumo">
           <button type="button" id="btn-imposta-linea" class="btn-secondary">Imposta</button>

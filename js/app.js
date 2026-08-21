@@ -11,6 +11,11 @@ const els = {
   btnAddText: document.getElementById('btn-add-text'),
   viewVoice: document.getElementById('view-voice'),
   btnCloseVoice: document.getElementById('btn-close-voice'),
+  addModeRow: document.querySelector('.add-mode-row'),
+  addExample: document.getElementById('add-example'),
+  pannelloVocale: document.getElementById('pannello-vocale'),
+  pannelloTesto: document.getElementById('pannello-testo'),
+  pannelloLinea: document.getElementById('pannello-linea'),
   btnMic: document.getElementById('btn-mic'),
   micStatus: document.getElementById('mic-status'),
   liveTranscript: document.getElementById('live-transcript'),
@@ -255,9 +260,30 @@ els.filterRow.addEventListener('click', (e) => {
 els.btnAdd.addEventListener('click', apriVoce);
 els.btnAddText.addEventListener('click', () => {
   apriVoce();
+  selezionaModoAggiunta('testo');
   els.textInput.focus();
 });
 els.btnCloseVoice.addEventListener('click', chiudiVoce);
+
+// Tre modi di aggiunta (vocale/testo/linea di consumo) mostrati uno alla
+// volta invece che tutti impilati: la schermata era diventata affollata e
+// la lista di revisione finiva fuori dallo schermo. Riusa lo stesso stile
+// "chip" già usato per i filtri in home, così i due selettori sono coerenti.
+const PANNELLI_AGGIUNTA = { vocale: els.pannelloVocale, testo: els.pannelloTesto, linea: els.pannelloLinea };
+
+function selezionaModoAggiunta(modo) {
+  els.addModeRow.querySelectorAll('.chip').forEach(c => c.classList.toggle('is-active', c.dataset.modo === modo));
+  Object.entries(PANNELLI_AGGIUNTA).forEach(([nome, el]) => el.classList.toggle('hidden', nome !== modo));
+  // L'esempio di frase è comune a vocale e testo (stesso formato), ma non
+  // pertinente nella scheda della linea di consumo.
+  els.addExample.classList.toggle('hidden', modo === 'linea');
+}
+
+els.addModeRow.addEventListener('click', (e) => {
+  const chip = e.target.closest('.chip');
+  if (!chip) return;
+  selezionaModoAggiunta(chip.dataset.modo);
+});
 
 function apriVoce() {
   bozzaRiconosciuti = [];
@@ -267,6 +293,7 @@ function apriVoce() {
   els.textInput.value = '';
   els.micStatus.textContent = 'Tocca per iniziare a parlare';
   els.btnMic.classList.remove('is-listening');
+  selezionaModoAggiunta('vocale');
   aggiornaUILineaConsumo();
   els.viewVoice.classList.remove('hidden');
 

@@ -265,9 +265,30 @@ h1, h2, h3 {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 40px 24px 20px;
+  padding: 20px 24px 16px;
   gap: 14px;
 }
+
+.add-mode-row { display: flex; gap: 8px; width: 100%; }
+.add-mode-row .chip { flex: 1; text-align: center; }
+
+.add-example {
+  font-size: 11.5px;
+  color: var(--text-faint);
+  text-align: center;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.add-panel {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding-top: 8px;
+}
+.add-panel-label { margin: 0; font-size: 12.5px; color: var(--text-dim); text-align: center; }
 
 .mic-button {
   position: relative;
@@ -305,31 +326,19 @@ h1, h2, h3 {
 }
 
 .mic-status { font-size: 14px; font-weight: 500; margin: 4px 0 0; }
-.mic-hint { font-size: 12.5px; color: var(--text-dim); text-align: center; max-width: 280px; margin: 0; }
 
 .live-transcript {
   width: 100%;
-  min-height: 60px;
+  min-height: 44px;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
   padding: 12px 14px;
   font-size: 14px;
   color: var(--text-dim);
-  margin-top: 6px;
 }
 
-.text-entry {
-  width: 100%;
-  margin-top: 18px;
-  padding-top: 18px;
-  border-top: 1px solid var(--border);
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-.text-entry-label { margin: 0; font-size: 12.5px; color: var(--text-dim); }
-.text-entry textarea {
+#pannello-testo textarea {
   width: 100%;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -340,7 +349,7 @@ h1, h2, h3 {
   font-family: inherit;
   resize: vertical;
 }
-.text-entry textarea:focus { outline: 2px solid var(--fresh); outline-offset: 1px; }
+#pannello-testo textarea:focus { outline: 2px solid var(--fresh); outline-offset: 1px; }
 
 .voice-review {
   padding: 16px 20px 24px;
