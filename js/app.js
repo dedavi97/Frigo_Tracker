@@ -267,6 +267,7 @@ function apriVoce() {
   els.textInput.value = '';
   els.micStatus.textContent = 'Tocca per iniziare a parlare';
   els.btnMic.classList.remove('is-listening');
+  aggiornaUILineaConsumo();
   els.viewVoice.classList.remove('hidden');
 
   if (!SpeechEngine.isSupported()) {
@@ -550,7 +551,6 @@ els.btnPiu7Stima.addEventListener('click', () => {
 
 els.btnHelp.addEventListener('click', () => {
   els.helpVersion.textContent = APP_VERSION;
-  aggiornaUILineaConsumo();
   els.viewHelp.classList.remove('hidden');
 });
 els.btnCloseHelp.addEventListener('click', () => els.viewHelp.classList.add('hidden'));

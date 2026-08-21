@@ -78,6 +78,15 @@
         <textarea id="text-input" rows="2" placeholder='Es. "yogurt diciotto marzo per la torta"'></textarea>
         <button id="btn-analizza-testo" type="button" class="btn-secondary">Analizza testo</button>
       </div>
+
+      <div class="text-entry">
+        <p class="text-entry-label">Linea di consumo (separa in home cosa consumare con priorità):</p>
+        <div class="linea-consumo-form">
+          <input type="date" id="f-linea-consumo">
+          <button type="button" id="btn-imposta-linea" class="btn-secondary">Imposta</button>
+        </div>
+        <button type="button" id="btn-rimuovi-linea" class="btn-secondary hidden">Rimuovi linea</button>
+      </div>
     </div>
 
     <div id="voice-review" class="voice-review hidden">
@@ -183,12 +192,7 @@
     <div class="help-body">
       <section>
         <h3>Linea di consumo</h3>
-        <p>Imposta una data: in home, i prodotti che scadono prima di quella data vengono separati da una riga, per ricordarti di consumarli con priorità (es. prima di partire per un viaggio). Solo visivo, non cambia colori o urgenza.</p>
-        <div class="linea-consumo-form">
-          <input type="date" id="f-linea-consumo">
-          <button type="button" id="btn-imposta-linea" class="btn-secondary">Imposta</button>
-        </div>
-        <button type="button" id="btn-rimuovi-linea" class="btn-secondary hidden">Rimuovi linea</button>
+        <p>Imposta una data nella schermata di aggiunta prodotto (icona del microfono): in home, i prodotti che scadono prima di quella data vengono separati da una riga, per ricordarti di consumarli con priorità (es. prima di partire per un viaggio). Solo visivo, non cambia colori o urgenza.</p>
       </section>
       <section>
         <h3>Cos'è Frigo Tracker</h3>

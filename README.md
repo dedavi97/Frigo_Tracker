@@ -22,7 +22,7 @@ Per prodotti senza una data stampata (es. verdura fresca), invece della data di'
 
 Eliminare o consumare un prodotto non lo cancella per sempre: resta nel filtro "Storico" per 24 ore, con un tasto per ripristinarlo in caso di errore.
 
-Nel dettaglio di un prodotto "aperto" o a scadenza stimata trovi un tasto "+7 giorni" per allungare la scadenza senza dover rifare i calcoli a mano. Per i prodotti "aperto" vedi anche da quanti giorni sono aperti (informazione discreta, solo nel dettaglio). Dalla pagina aiuto puoi impostare una "linea di consumo": una data oltre la quale, in home, compare una riga che separa cosa consumare con priorità (es. prima di partire per un viaggio) da tutto il resto — solo un promemoria visivo, non cambia colori o urgenza.
+Nel dettaglio di un prodotto "aperto" o a scadenza stimata trovi un tasto "+7 giorni" per allungare la scadenza senza dover rifare i calcoli a mano. Per i prodotti "aperto" vedi anche da quanti giorni sono aperti (informazione discreta, solo nel dettaglio). Dalla schermata di aggiunta prodotto (icona del microfono) puoi impostare una "linea di consumo": una data oltre la quale, in home, compare una riga che separa cosa consumare con priorità (es. prima di partire per un viaggio) da tutto il resto — solo un promemoria visivo, non cambia colori o urgenza.
 
 ## Account e sincronizzazione (opzionale)
 
