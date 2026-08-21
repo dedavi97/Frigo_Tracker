@@ -7,8 +7,7 @@ const els = {
   emptyState: document.getElementById('empty-state'),
   filterRow: document.querySelector('.filter-row'),
 
-  btnAdd: document.getElementById('btn-add'),
-  btnAddText: document.getElementById('btn-add-text'),
+  btnFabAdd: document.getElementById('btn-fab-add'),
   viewVoice: document.getElementById('view-voice'),
   btnCloseVoice: document.getElementById('btn-close-voice'),
   addModeRow: document.querySelector('.add-mode-row'),
@@ -162,7 +161,7 @@ function renderLista() {
 
   els.emptyState.classList.toggle('hidden', tutti.length > 0);
   els.emptyState.querySelector('h2').textContent = 'Dispensa vuota';
-  els.emptyState.querySelector('p').textContent = 'Tocca il microfono in alto e inizia a elencare cosa hai comprato.';
+  els.emptyState.querySelector('p').textContent = 'Tocca il pulsante "+" in basso e inizia a elencare cosa hai comprato.';
   els.list.innerHTML = '';
 
   // Linea di consumo: separatore visivo (nessun cambio di colore/urgenza)
@@ -257,12 +256,7 @@ els.filterRow.addEventListener('click', (e) => {
 
 /* ---------------- Overlay voce ---------------- */
 
-els.btnAdd.addEventListener('click', apriVoce);
-els.btnAddText.addEventListener('click', () => {
-  apriVoce();
-  selezionaModoAggiunta('testo');
-  els.textInput.focus();
-});
+els.btnFabAdd.addEventListener('click', apriVoce);
 els.btnCloseVoice.addEventListener('click', chiudiVoce);
 
 // Tre modi di aggiunta (vocale/testo/linea di consumo) mostrati uno alla
@@ -277,6 +271,7 @@ function selezionaModoAggiunta(modo) {
   // L'esempio di frase è comune a vocale e testo (stesso formato), ma non
   // pertinente nella scheda della linea di consumo.
   els.addExample.classList.toggle('hidden', modo === 'linea');
+  if (modo === 'testo') els.textInput.focus();
 }
 
 els.addModeRow.addEventListener('click', (e) => {
@@ -645,15 +640,24 @@ function aggiornaViewAccount() {
 
 const ICONA_ACCOUNT = '<svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z" fill="currentColor"/></svg>';
 
+// Da loggato mostra la foto profilo Google (utente.photoURL, disponibile
+// dall'oggetto restituito da Firebase Auth per il provider Google), o in
+// mancanza l'iniziale del nome. Sostituisce la vecchia pillola testuale
+// "Ciao, Nome", che su nomi lunghi si sovrapponeva agli altri pulsanti
+// dell'header.
 function aggiornaBottoneAccount(utente) {
+  els.btnAccount.classList.remove('avatar-iniziale');
   if (utente) {
-    const nome = utente.displayName ? utente.displayName.split(' ')[0] : (utente.email || '').split('@')[0];
-    els.btnAccount.textContent = `Ciao, ${nome}`;
-    els.btnAccount.classList.add('btn-account-loggato');
     els.btnAccount.title = 'Account';
+    if (utente.photoURL) {
+      els.btnAccount.innerHTML = `<img class="avatar-img" src="${utente.photoURL}" alt="">`;
+    } else {
+      const nome = utente.displayName || utente.email || '?';
+      els.btnAccount.textContent = nome.charAt(0).toUpperCase();
+      els.btnAccount.classList.add('avatar-iniziale');
+    }
   } else {
     els.btnAccount.innerHTML = ICONA_ACCOUNT;
-    els.btnAccount.classList.remove('btn-account-loggato');
     els.btnAccount.title = 'Accedi';
   }
 }

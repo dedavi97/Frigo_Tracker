@@ -5,7 +5,7 @@ App web (PWA) per tenere traccia delle scadenze di frigo e dispensa tramite coma
 ## Come funziona
 
 1. Apri l'app (da telefono o PC, tramite browser)
-2. Tocca l'icona del microfono (oppure l'icona accanto, per scrivere invece di parlare)
+2. Tocca il pulsante "+" in basso, poi la scheda Vocale (predefinita) o Testo
 3. Elenca cosa hai comprato, nel formato:
    `<prodotto> <giorno> <mese> [per <motivo>]`, separando più prodotti con "poi"/"e poi"/"quindi"/una virgola
 
@@ -22,7 +22,7 @@ Per prodotti senza una data stampata (es. verdura fresca), invece della data di'
 
 Eliminare o consumare un prodotto non lo cancella per sempre: resta nel filtro "Storico" per 24 ore, con un tasto per ripristinarlo in caso di errore.
 
-Nel dettaglio di un prodotto "aperto" o a scadenza stimata trovi un tasto "+7 giorni" per allungare la scadenza senza dover rifare i calcoli a mano. Per i prodotti "aperto" vedi anche da quanti giorni sono aperti (informazione discreta, solo nel dettaglio). Dalla schermata di aggiunta prodotto (icona del microfono) puoi impostare una "linea di consumo": una data oltre la quale, in home, compare una riga che separa cosa consumare con priorità (es. prima di partire per un viaggio) da tutto il resto — solo un promemoria visivo, non cambia colori o urgenza.
+Nel dettaglio di un prodotto "aperto" o a scadenza stimata trovi un tasto "+7 giorni" per allungare la scadenza senza dover rifare i calcoli a mano. Per i prodotti "aperto" vedi anche da quanti giorni sono aperti (informazione discreta, solo nel dettaglio). Dalla schermata di aggiunta prodotto (pulsante "+" in basso) puoi impostare una "linea di consumo": una data oltre la quale, in home, compare una riga che separa cosa consumare con priorità (es. prima di partire per un viaggio) da tutto il resto — solo un promemoria visivo, non cambia colori o urgenza.
 
 ## Account e sincronizzazione (opzionale)
 
@@ -76,6 +76,8 @@ Frigo_Tracker/
 
 ## Changelog
 
+- **v2.0.0** — Restyle grafico: font Baloo 2 + Nunito, palette più satura, header senza pulsanti microfono/testo/pillola account (sostituiti da un avatar account e da un pulsante "+" flottante in basso, unico punto di ingresso per aggiungere un prodotto). Corretto un bug di layout presente da sempre su desktop (header e lista non si impilavano correttamente).
+- **v1.5.6** — Pagina aiuto e changelog allineati alle funzionalità delle versioni precedenti (+7 giorni, età apertura, redesign a schede), mancavano dai testi.
 - **v1.5.5** — Schermata di aggiunta prodotto riorganizzata a schede (Vocale/Testo/Linea consumo, un pannello alla volta) invece di tutto impilato: meno affollata, la lista di revisione si vede meglio.
 - **v1.5.4** — La linea di consumo si imposta ora dalla schermata di aggiunta prodotto invece che dalla pagina aiuto.
 - **v1.5.3** — Tasto "+7 giorni" per prodotti "aperto" e a scadenza stimata (allunga la scadenza senza ricalcolare a mano). Riga discreta "Aperto da N giorni" nel dettaglio. Nuova "linea di consumo": data impostabile dalla pagina aiuto, separa in home cosa consumare con priorità da tutto il resto (solo visivo).

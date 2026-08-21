@@ -17,21 +17,15 @@
       <span class="brand-mark">FT</span>
       <div class="brand-text">
         <h1>Frigo Tracker</h1>
-        <p class="brand-sub">Cosa c'è, quando scade</p>
+        <p class="brand-sub">Tieni traccia, riduci gli sprechi</p>
       </div>
     </div>
     <div class="header-actions">
-      <button id="btn-account" class="btn-icon" title="Account" aria-label="Account">
-        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z" fill="currentColor"/></svg>
-      </button>
       <button id="btn-help" class="btn-icon" title="Aiuto" aria-label="Aiuto">
         <svg viewBox="0 0 24 24" width="20" height="20"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-13c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z" fill="currentColor"/></svg>
       </button>
-      <button id="btn-add-text" class="btn-icon" title="Aggiungi per testo" aria-label="Aggiungi per testo">
-        <svg viewBox="0 0 24 24" width="19" height="19"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor"/></svg>
-      </button>
-      <button id="btn-add" class="btn-icon" title="Registra a voce" aria-label="Registra a voce">
-        <svg viewBox="0 0 24 24" width="22" height="22"><path d="M12 15a3 3 0 0 0 3-3V6a3 3 0 0 0-6 0v6a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.92V21h2v-2.08A7 7 0 0 0 19 12h-2Z" fill="currentColor"/></svg>
+      <button id="btn-account" class="btn-icon" title="Account" aria-label="Account">
+        <svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z" fill="currentColor"/></svg>
       </button>
     </div>
   </header>
@@ -47,13 +41,17 @@
     <div id="empty-state" class="empty-state hidden">
       <div class="empty-glyph">🍃</div>
       <h2>Dispensa vuota</h2>
-      <p>Tocca il microfono in alto e inizia a elencare cosa hai comprato.</p>
+      <p>Tocca il pulsante "+" in basso e inizia a elencare cosa hai comprato.</p>
     </div>
 
     <ul id="product-list" class="product-list"></ul>
 
     <footer class="app-footer">v<span id="app-version"></span></footer>
   </main>
+
+  <button id="btn-fab-add" class="fab-add" aria-label="Aggiungi prodotto">
+    <svg viewBox="0 0 24 24" width="28" height="28"><path d="M11 5h2v6h6v2h-6v6h-2v-6H5v-2h6V5z" fill="currentColor"/></svg>
+  </button>
 
   <!-- Overlay aggiunta prodotto (voce o testo) -->
   <section id="view-voice" class="overlay hidden">
@@ -200,7 +198,7 @@
     <div class="help-body">
       <section>
         <h3>Linea di consumo</h3>
-        <p>Nella schermata di aggiunta prodotto (icona del microfono), scheda "Linea consumo": imposta una data e, in home, i prodotti che scadono prima vengono separati da una riga, per ricordarti di consumarli con priorità (es. prima di partire per un viaggio). Solo visivo, non cambia colori o urgenza.</p>
+        <p>Nella schermata di aggiunta prodotto (pulsante "+" in basso), scheda "Linea consumo": imposta una data e, in home, i prodotti che scadono prima vengono separati da una riga, per ricordarti di consumarli con priorità (es. prima di partire per un viaggio). Solo visivo, non cambia colori o urgenza.</p>
       </section>
       <section>
         <h3>Cos'è Frigo Tracker</h3>
@@ -208,9 +206,9 @@
       </section>
       <section>
         <h3>Come si aggiunge un prodotto</h3>
-        <p>Tocca il microfono e di' cosa hai comprato, nel formato "prodotto, giorno, mese", con il motivo opzionale dopo "per". Esempio:</p>
+        <p>Tocca il pulsante "+" in basso, poi il microfono, e di' cosa hai comprato, nel formato "prodotto, giorno, mese", con il motivo opzionale dopo "per". Esempio:</p>
         <p class="help-example">"yogurt diciotto marzo per la torta, poi salmone ventuno luglio"</p>
-        <p>Puoi separare più prodotti dicendo "poi", "quindi" o facendo una virgola. Nella stessa schermata trovi anche la scheda "Testo" per scrivere invece di parlare (icona accanto al microfono per aprirla direttamente).</p>
+        <p>Puoi separare più prodotti dicendo "poi", "quindi" o facendo una virgola. Nella stessa schermata trovi anche la scheda "Testo", per scrivere invece di parlare.</p>
         <p>Per prodotti senza una data stampata (es. verdura fresca), invece della data di' una durata approssimativa: <em>"verdura tra una settimana"</em>. Compare comunque con l'anello colorato come gli altri, con un'etichetta "Stima" a ricordarti che è una data approssimativa.</p>
         <p>Prima di salvare, controlla sempre la lista riconosciuta: puoi correggere nome, data e motivo di ogni prodotto, oppure toccare di nuovo il microfono per aggiungerne altri.</p>
       </section>
