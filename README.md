@@ -22,6 +22,8 @@ Per prodotti senza una data stampata (es. verdura fresca), invece della data di'
 
 Eliminare o consumare un prodotto non lo cancella per sempre: resta nel filtro "Storico" per 24 ore, con un tasto per ripristinarlo in caso di errore.
 
+Nel dettaglio di un prodotto "aperto" o a scadenza stimata trovi un tasto "+7 giorni" per allungare la scadenza senza dover rifare i calcoli a mano. Per i prodotti "aperto" vedi anche da quanti giorni sono aperti (informazione discreta, solo nel dettaglio). Dalla pagina aiuto puoi impostare una "linea di consumo": una data oltre la quale, in home, compare una riga che separa cosa consumare con priorità (es. prima di partire per un viaggio) da tutto il resto — solo un promemoria visivo, non cambia colori o urgenza.
+
 ## Account e sincronizzazione (opzionale)
 
 Tocca l'icona account nell'header per accedere con Google. Da loggato, i prodotti si sincronizzano automaticamente tra tutti i dispositivi collegati allo stesso account (via Firestore). Il login è facoltativo: senza accedere, l'app funziona esattamente come in locale, salvando solo nel browser corrente. Se hai già dati salvati in locale, al primo accesso viene chiesto se caricarli online (restano comunque anche in locale).
@@ -74,6 +76,7 @@ Frigo_Tracker/
 
 ## Changelog
 
+- **v1.5.3** — Tasto "+7 giorni" per prodotti "aperto" e a scadenza stimata (allunga la scadenza senza ricalcolare a mano). Riga discreta "Aperto da N giorni" nel dettaglio. Nuova "linea di consumo": data impostabile dalla pagina aiuto, separa in home cosa consumare con priorità da tutto il resto (solo visivo).
 - **v1.5.2** — Prodotti senza data stampata (es. verdura): scadenza stimata dicendo "tra N giorni/settimane" invece di una data esatta, riconosciuta anche a voce/testo. "Segna come aperto" ora precompila 7 giorni di default. Il prompt di sync mostra i prodotti trovati invece di chiedere conferma alla cieca.
 - **v1.5.0** — Sync robusta tra Firestore e dati locali: al login non si perdono più prodotti aggiunti offline o su un dispositivo non ancora sincronizzato; conflitti risolti automaticamente in base a chi ha la modifica più recente.
 - **v1.4.0** — Prodotto "aperto": indichi quanti giorni dura una volta aperto, la scadenza mostrata (colore, ordinamento) si aggiorna di conseguenza, quella originale resta comunque salvata.

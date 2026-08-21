@@ -36,6 +36,8 @@ const els = {
   aperturaInfo: document.getElementById('apertura-info'),
   aperturaData: document.getElementById('apertura-data'),
   aperturaScadenzaEffettiva: document.getElementById('apertura-scadenza-effettiva'),
+  aperturaEta: document.getElementById('apertura-eta'),
+  btnPiu7Apertura: document.getElementById('btn-piu7-apertura'),
   btnAnnullaApertura: document.getElementById('btn-annulla-apertura'),
   aperturaForm: document.getElementById('apertura-form'),
   fDurataApertura: document.getElementById('f-durata-apertura'),
@@ -43,10 +45,16 @@ const els = {
   btnConfermaApertura: document.getElementById('btn-conferma-apertura'),
   btnSegnaAperto: document.getElementById('btn-segna-aperto'),
 
+  stimaInfo: document.getElementById('stima-info'),
+  btnPiu7Stima: document.getElementById('btn-piu7-stima'),
+
   btnHelp: document.getElementById('btn-help'),
   viewHelp: document.getElementById('view-help'),
   btnCloseHelp: document.getElementById('btn-close-help'),
   helpVersion: document.getElementById('help-version'),
+  fLineaConsumo: document.getElementById('f-linea-consumo'),
+  btnImpostaLinea: document.getElementById('btn-imposta-linea'),
+  btnRimuoviLinea: document.getElementById('btn-rimuovi-linea'),
 
   btnAccount: document.getElementById('btn-account'),
   viewAccount: document.getElementById('view-account'),
@@ -97,6 +105,16 @@ function scadenzaAttiva(p) {
   return p.scadenza;
 }
 
+// Informazione secondaria e discreta nel dettaglio (non in home): da quanti
+// giorni un prodotto "aperto" è aperto. giorniAllaScadenza(dataApertura) dà
+// il numero negativo di giorni già trascorsi da quella data, basta invertirlo.
+function testoEta(dataAperturaISO) {
+  const giorni = -giorniAllaScadenza(dataAperturaISO);
+  if (giorni <= 0) return 'Aperto oggi';
+  if (giorni === 1) return 'Aperto da 1 giorno';
+  return `Aperto da ${giorni} giorni`;
+}
+
 function formattaData(iso) {
   const d = new Date(iso + 'T00:00:00');
   return d.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
@@ -142,7 +160,19 @@ function renderLista() {
   els.emptyState.querySelector('p').textContent = 'Tocca il microfono in alto e inizia a elencare cosa hai comprato.';
   els.list.innerHTML = '';
 
+  // Linea di consumo: separatore visivo (nessun cambio di colore/urgenza)
+  // nel punto della lista, già ordinata per scadenza, dove cade la data
+  // impostata dall'utente. Va inserito prima della prima card che scade a
+  // quella data o dopo; se nessuna, finisce in fondo alla lista.
+  const lineaConsumo = getLineaConsumo();
+  let lineaMostrata = !lineaConsumo;
+
   filtrati.forEach(p => {
+    if (!lineaMostrata && scadenzaAttiva(p) >= lineaConsumo) {
+      els.list.appendChild(creaDivisoreLinea(lineaConsumo));
+      lineaMostrata = true;
+    }
+
     const giorni = giorniAllaScadenza(scadenzaAttiva(p));
     const stato = statoDaGiorni(giorni);
     const scala = (p.aperto && p.durataApertoGiorni) ? Number(p.durataApertoGiorni) : 14;
@@ -163,6 +193,17 @@ function renderLista() {
     li.addEventListener('click', () => apriDettaglio(p.id));
     els.list.appendChild(li);
   });
+
+  if (!lineaMostrata) {
+    els.list.appendChild(creaDivisoreLinea(lineaConsumo));
+  }
+}
+
+function creaDivisoreLinea(dataISO) {
+  const li = document.createElement('li');
+  li.className = 'linea-consumo';
+  li.textContent = `── Consuma entro qui: ${formattaData(dataISO)} ──`;
+  return li;
 }
 
 function renderStorico() {
@@ -378,14 +419,18 @@ function aggiornaAperturaUI(p) {
   if (p.stato !== 'attivo') {
     els.aperturaInfo.classList.add('hidden');
     els.btnSegnaAperto.classList.add('hidden');
+    els.stimaInfo.classList.add('hidden');
     return;
   }
+
+  els.stimaInfo.classList.toggle('hidden', !p.scadenzaStimata);
 
   if (p.aperto) {
     els.aperturaInfo.classList.remove('hidden');
     els.btnSegnaAperto.classList.add('hidden');
     els.aperturaData.textContent = formattaData(p.dataApertura);
     els.aperturaScadenzaEffettiva.textContent = formattaData(scadenzaAttiva(p));
+    els.aperturaEta.textContent = testoEta(p.dataApertura);
   } else {
     els.aperturaInfo.classList.add('hidden');
     els.btnSegnaAperto.classList.remove('hidden');
@@ -471,13 +516,87 @@ els.btnAnnullaApertura.addEventListener('click', () => {
   chiudiDettaglio();
 });
 
+// La scadenza "aperto" è già calcolata al volo da scadenzaAttiva() a partire
+// da durataApertoGiorni: basta sommare 7 al contatore, nessun altro campo da
+// toccare (a differenza di +7 sulla stima, vedi sotto: sono due meccanismi
+// diversi che non condividono dati, vanno tenuti separati).
+els.btnPiu7Apertura.addEventListener('click', () => {
+  if (!idProdottoInModifica) return;
+  const p = Storage.getById(idProdottoInModifica);
+  if (!p) return;
+  Storage.aggiorna(idProdottoInModifica, { durataApertoGiorni: Number(p.durataApertoGiorni) + 7 });
+  mostraToast('Aggiunti 7 giorni');
+  chiudiDettaglio();
+});
+
+/* ---------------- Prodotto a scadenza stimata ("verdura tra una settimana") ---------------- */
+
+// Qui, a differenza di +7 sull'apertura, non esiste un contatore di giorni
+// salvato da incrementare: la stima è già stata scritta direttamente nel
+// campo scadenza al momento del riconoscimento (vedi js/speech.js), quindi
+// si sposta in avanti quel campo stesso.
+els.btnPiu7Stima.addEventListener('click', () => {
+  if (!idProdottoInModifica) return;
+  const p = Storage.getById(idProdottoInModifica);
+  if (!p) return;
+  const d = new Date(p.scadenza + 'T00:00:00');
+  d.setDate(d.getDate() + 7);
+  Storage.aggiorna(idProdottoInModifica, { scadenza: dataLocaleISO(d) });
+  mostraToast('Scadenza spostata di 7 giorni');
+  chiudiDettaglio();
+});
+
 /* ---------------- Aiuto ---------------- */
 
 els.btnHelp.addEventListener('click', () => {
   els.helpVersion.textContent = APP_VERSION;
+  aggiornaUILineaConsumo();
   els.viewHelp.classList.remove('hidden');
 });
 els.btnCloseHelp.addEventListener('click', () => els.viewHelp.classList.add('hidden'));
+
+/* ---------------- Linea di consumo ----------------
+   Data target impostabile liberamente, non legata a nessun prodotto:
+   solo effetto visivo (un separatore in lista), niente cambi di colore o
+   urgenza. Salvata solo sul dispositivo (localStorage), non sincronizzata
+   via account: è un promemoria locale, non un dato del prodotto. Una sola
+   linea attiva alla volta: impostarne una nuova sostituisce la precedente.
+   ========================================================= */
+
+const LINEA_CONSUMO_KEY = 'frigo_tracker_linea_consumo';
+
+function getLineaConsumo() {
+  return localStorage.getItem(LINEA_CONSUMO_KEY) || null;
+}
+
+function setLineaConsumo(dataISO) {
+  if (dataISO) localStorage.setItem(LINEA_CONSUMO_KEY, dataISO);
+  else localStorage.removeItem(LINEA_CONSUMO_KEY);
+}
+
+function aggiornaUILineaConsumo() {
+  const data = getLineaConsumo();
+  els.fLineaConsumo.value = data || '';
+  els.btnRimuoviLinea.classList.toggle('hidden', !data);
+}
+
+els.btnImpostaLinea.addEventListener('click', () => {
+  if (!els.fLineaConsumo.value) {
+    mostraToast('Scegli prima una data');
+    return;
+  }
+  setLineaConsumo(els.fLineaConsumo.value);
+  mostraToast('Linea di consumo impostata');
+  aggiornaUILineaConsumo();
+  renderLista();
+});
+
+els.btnRimuoviLinea.addEventListener('click', () => {
+  setLineaConsumo(null);
+  mostraToast('Linea di consumo rimossa');
+  aggiornaUILineaConsumo();
+  renderLista();
+});
 
 /* ---------------- Account ---------------- */
 

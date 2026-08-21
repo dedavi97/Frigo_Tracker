@@ -511,6 +511,30 @@ h1, h2, h3 {
   font-size: 14px;
   font-family: inherit;
 }
+.apertura-eta { font-size: 12px !important; color: var(--text-faint) !important; }
+
+/* ---------- Linea di consumo ---------- */
+.linea-consumo-form { display: flex; gap: 8px; }
+.linea-consumo-form input {
+  flex: 1;
+  min-width: 0;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 9px 11px;
+  font-size: 14px;
+  font-family: inherit;
+}
+.linea-consumo-form button { width: auto; white-space: nowrap; }
+
+.product-list .linea-consumo {
+  text-align: center;
+  font-size: 11.5px;
+  color: var(--text-faint);
+  padding: 2px 0 4px;
+  letter-spacing: 0.02em;
+}
 
 /* ---------- Buttons ---------- */
 .btn-primary, .btn-secondary, .btn-danger {

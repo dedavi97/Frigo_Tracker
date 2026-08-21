@@ -116,9 +116,18 @@
         <textarea id="f-note" rows="2"></textarea>
       </label>
 
+      <div id="stima-info" class="apertura-box hidden">
+        <p>Scadenza stimata, non una data esatta.</p>
+        <button type="button" id="btn-piu7-stima" class="btn-secondary">+7 giorni</button>
+      </div>
+
       <div id="apertura-info" class="apertura-box hidden">
         <p>Aperto il <span id="apertura-data"></span> — scade effettivamente il <span id="apertura-scadenza-effettiva"></span></p>
-        <button type="button" id="btn-annulla-apertura" class="btn-secondary">Annulla apertura</button>
+        <p id="apertura-eta" class="apertura-eta"></p>
+        <div class="detail-actions">
+          <button type="button" id="btn-piu7-apertura" class="btn-secondary">+7 giorni</button>
+          <button type="button" id="btn-annulla-apertura" class="btn-secondary">Annulla apertura</button>
+        </div>
       </div>
 
       <div id="apertura-form" class="apertura-box hidden">
@@ -173,6 +182,15 @@
     </div>
     <div class="help-body">
       <section>
+        <h3>Linea di consumo</h3>
+        <p>Imposta una data: in home, i prodotti che scadono prima di quella data vengono separati da una riga, per ricordarti di consumarli con priorità (es. prima di partire per un viaggio). Solo visivo, non cambia colori o urgenza.</p>
+        <div class="linea-consumo-form">
+          <input type="date" id="f-linea-consumo">
+          <button type="button" id="btn-imposta-linea" class="btn-secondary">Imposta</button>
+        </div>
+        <button type="button" id="btn-rimuovi-linea" class="btn-secondary hidden">Rimuovi linea</button>
+      </section>
+      <section>
         <h3>Cos'è Frigo Tracker</h3>
         <p>Tiene traccia delle scadenze di frigo e dispensa. Aggiungi i prodotti a voce o scrivendoli, e l'app ti avvisa quando stanno per scadere.</p>
       </section>
@@ -201,6 +219,7 @@
           <li>Modifica, segna come consumato o elimina ogni prodotto</li>
           <li>"Segna come aperto": se un prodotto dura meno una volta aperto, indichi tu quanti giorni gli restano e l'anello si aggiorna di conseguenza</li>
           <li>Storico di eliminati/consumati con possibilità di ripristino entro 24 ore</li>
+          <li>Linea di consumo: una riga in lista per ricordarti cosa consumare con priorità entro una certa data</li>
           <li>Account Google opzionale con sincronizzazione tra dispositivi</li>
         </ul>
       </section>
