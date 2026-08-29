@@ -43,18 +43,40 @@ const DATA_REGEX = new RegExp(
 // data esatta, una durata approssimativa da oggi ("tra una settimana", "tra
 // tre giorni"). "un"/"una" non sono in NUMERI_PAROLA (lì non avrebbero senso
 // per un giorno del mese), qui invece sono l'unico modo naturale di dire 1.
-const UNITA_DURATA = { giorno: 1, giorni: 1, settimana: 7, settimane: 7 };
-const NUMERI_DURATA = Object.assign({ un: 1, una: 1 }, NUMERI_PAROLA);
+// "un paio di"/"qualche" sono espressioni vaghe comuni nel parlato: non un
+// numero esatto ma un valore di default ragionevole (2 e 3).
+const UNITA_DURATA = { giorno: 1, giorni: 1, settimana: 7, settimane: 7, mese: 30, mesi: 30 };
+const NUMERI_DURATA = Object.assign(
+  { 'un paio di': 2, qualche: 3, un: 1, una: 1 },
+  NUMERI_PAROLA
+);
 const NOME_NUMERO_DURATA = Object.keys(NUMERI_DURATA).concat(['\\d{1,2}']).join('|');
 const NOME_UNITA_DURATA = Object.keys(UNITA_DURATA).join('|');
+// Gruppo finale opzionale per valori non interi ("una settimana e mezza"):
+// arrotondati sempre per eccesso al momento del calcolo dei giorni, mai per
+// difetto (meglio scartare un prodotto un giorno prima che rischiare dopo).
 const DURATA_REGEX = new RegExp(
-  `\\btra\\s+(${NOME_NUMERO_DURATA})\\s+(${NOME_UNITA_DURATA})\\b`,
+  `\\btra\\s+(${NOME_NUMERO_DURATA})\\s+(${NOME_UNITA_DURATA})(\\s+e\\s+mezz[oa])?\\b`,
   'gi'
 );
 
 function numeroDurataDaTesto(token) {
   if (/^\d{1,2}$/.test(token)) return parseInt(token, 10);
   return NUMERI_DURATA[token.toLowerCase()] || null;
+}
+
+// Per il riconoscimento di quantità multiple in testa al nome prodotto
+// ("tre yogurt", "2 mele"): stesso vocabolario numerico delle durate stimate,
+// riusato qui per lo stesso motivo (evitare una terza mappa di numeri).
+const QUANTITA_REGEX = new RegExp(`^(${NOME_NUMERO_DURATA})\\s+`, 'i');
+
+function estraiQuantita(nomeGrezzo) {
+  const m = nomeGrezzo.match(QUANTITA_REGEX);
+  if (!m) return { quantita: 1, nome: nomeGrezzo };
+  const resto = nomeGrezzo.slice(m[0].length).trim();
+  const q = numeroDurataDaTesto(m[1]);
+  if (!q || q < 1 || !resto) return { quantita: 1, nome: nomeGrezzo };
+  return { quantita: q, nome: resto };
 }
 
 function pulisciTesto(t) {
@@ -131,7 +153,8 @@ function parseTranscript(testoGrezzo) {
     lunghezza: m[0].length,
     tipo: 'durata',
     numero: numeroDurataDaTesto(m[1]),
-    unita: m[2].toLowerCase()
+    unita: m[2].toLowerCase(),
+    mezza: !!m[3]
   }));
 
   const match = ancoreData.concat(ancoreDurata).sort((a, b) => a.index - b.index);
@@ -170,25 +193,33 @@ function parseTranscript(testoGrezzo) {
       nomeInAttesa = spanIntermedio.replace(SEPARATORI, '').trim();
     }
 
-    const nomePulito = rimuoviArticoloFinale(nomeGrezzo.replace(SEPARATORI, '').trim());
+    const nomeSenzaSep = nomeGrezzo.replace(SEPARATORI, '').trim();
+    const { quantita, nome: nomeSenzaQuantita } = estraiQuantita(nomeSenzaSep);
+    const nomePulito = rimuoviArticoloFinale(nomeSenzaQuantita);
     if (!nomePulito) continue;
 
     if (m.tipo === 'data') {
       if (!m.giornoNum || !m.meseNum) continue;
-      risultati.push({
-        nome: capitalizza(nomePulito),
-        scadenza: dataISO(m.giornoNum, m.meseNum, m.anno),
-        motivo: capitalizza(motivo)
-      });
+      for (let q = 0; q < quantita; q++) {
+        risultati.push({
+          nome: capitalizza(nomePulito),
+          scadenza: dataISO(m.giornoNum, m.meseNum, m.anno),
+          motivo: capitalizza(motivo)
+        });
+      }
     } else {
       if (!m.numero) continue;
-      const giorni = m.numero * UNITA_DURATA[m.unita];
-      risultati.push({
-        nome: capitalizza(nomePulito),
-        scadenza: dataDaOggiPiuGiorni(giorni),
-        scadenzaStimata: true,
-        motivo: capitalizza(motivo)
-      });
+      let giorni = m.numero * UNITA_DURATA[m.unita];
+      if (m.mezza) giorni += UNITA_DURATA[m.unita] / 2;
+      giorni = Math.ceil(giorni);
+      for (let q = 0; q < quantita; q++) {
+        risultati.push({
+          nome: capitalizza(nomePulito),
+          scadenza: dataDaOggiPiuGiorni(giorni),
+          scadenzaStimata: true,
+          motivo: capitalizza(motivo)
+        });
+      }
     }
   }
 

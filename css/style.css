@@ -174,7 +174,7 @@ h1, h2, h3 {
   padding: 0 20px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 
 .product-card {
@@ -184,7 +184,7 @@ h1, h2, h3 {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 12px 14px;
+  padding: 10px 12px;
   cursor: pointer;
   transition: border-color 0.15s ease;
 }
@@ -201,8 +201,8 @@ h1, h2, h3 {
 }
 
 .product-info { flex: 1; min-width: 0; }
-.product-name { font-size: 15.5px; font-weight: 600; margin: 0 0 3px; }
-.product-meta { font-size: 12.5px; color: var(--text-dim); display: flex; gap: 8px; flex-wrap: wrap; margin: 0; }
+.product-name { font-size: 15px; font-weight: 600; margin: 0 0 2px; }
+.product-meta { font-size: 12px; color: var(--text-dim); display: flex; gap: 6px; flex-wrap: wrap; margin: 0; }
 .product-meta .tag-motivo {
   background: var(--surface-2);
   padding: 1px 8px;
@@ -223,6 +223,52 @@ h1, h2, h3 {
   color: var(--text-faint);
   border: 1px solid var(--border);
 }
+
+/* ---------- Raggruppamento visivo (stesso nome prodotto) ----------
+   Solo aggregazione in fase di visualizzazione: il modello dati (js/app.js,
+   js/storage.js) resta invariato, ogni prodotto è sempre un record separato. */
+.group-count {
+  font-weight: 500;
+  color: var(--text-faint);
+  font-size: 13px;
+}
+
+.group-mini-list {
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+  margin: 4px 0 0;
+}
+.group-mini-dot {
+  font-size: 10.5px;
+  font-weight: 700;
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+.group-mini-dot.status-fresh { color: var(--fresh); border-color: var(--fresh); }
+.group-mini-dot.status-warn { color: var(--warn); border-color: var(--warn); }
+.group-mini-dot.status-urgent { color: var(--urgent); border-color: var(--urgent); }
+
+.product-card--group-header {
+  padding: 8px 12px;
+  cursor: default;
+  background: transparent;
+  border-style: dashed;
+}
+.product-card--group-header .product-name { margin: 0; }
+.btn-group-comprimi {
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text-dim);
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.product-card--group-member { margin-left: 14px; }
 
 .storico-badge {
   flex-shrink: 0;
@@ -446,15 +492,45 @@ h1, h2, h3 {
 .migrazione-lista .migrazione-nome { color: var(--text); font-weight: 600; }
 .migrazione-lista .migrazione-data { color: var(--text-dim); flex-shrink: 0; }
 
-/* ---------- Aiuto ---------- */
+/* ---------- Aiuto (accordion) ---------- */
 .help-body {
   padding: 20px;
   display: flex;
   flex-direction: column;
-  gap: 22px;
+  gap: 10px;
   overflow-y: auto;
 }
-.help-body h3 { font-size: 15px; margin: 0 0 8px; }
+.help-accordion {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+}
+.help-accordion:last-of-type { border-bottom: none; }
+.help-accordion-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  background: none;
+  border: none;
+  padding: 8px 0;
+  cursor: pointer;
+  text-align: left;
+  color: var(--text);
+}
+.help-accordion-toggle h3 { font-size: 15px; margin: 0; }
+.help-accordion-icon {
+  flex-shrink: 0;
+  font-size: 20px;
+  color: var(--text-faint);
+  transition: transform 0.18s ease;
+}
+.help-accordion.is-open .help-accordion-icon { transform: rotate(90deg); }
+.help-accordion-content {
+  display: none;
+  padding: 4px 0 6px;
+}
+.help-accordion.is-open .help-accordion-content { display: block; }
 .help-body p { margin: 0 0 8px; font-size: 13.5px; color: var(--text-dim); line-height: 1.5; }
 .help-body p:last-child { margin-bottom: 0; }
 .help-example {

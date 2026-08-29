@@ -16,9 +16,11 @@ App web (PWA) per tenere traccia delle scadenze di frigo e dispensa tramite coma
 5. Correggi eventuali errori direttamente nei campi, o tocca di nuovo il microfono/scrivi ancora per aggiungerne altri
 6. Tocca "Salva tutto"
 
-I prodotti compaiono in home ordinati per scadenza, con un anello colorato che indica quanto manca (verde: tranquillo, ambra: entro 7 giorni, rosso: entro 2 giorni o scaduto). Se un prodotto dura meno una volta aperto, "Segna come aperto" nel dettaglio fa ricalcolare la scadenza mostrata sulla durata che indichi tu, invece di quella stampata sulla confezione.
+Puoi dettare più prodotti uguali in una volta sola con un numero all'inizio (es. "tre yogurt diciotto marzo"): compaiono subito come righe distinte nella lista da controllare, modificabili una per una.
 
-Per prodotti senza una data stampata (es. verdura fresca), invece della data di' una durata approssimativa: "verdura tra una settimana". Compare comunque con l'anello colorato come gli altri, con un'etichetta "Stima" a ricordarti che la data è approssimativa.
+I prodotti compaiono in home ordinati per scadenza, con un anello colorato che indica quanto manca (verde: tranquillo, ambra: entro 7 giorni, rosso: entro 2 giorni o scaduto). Prodotti con lo stesso nome esatto sono raggruppati in una sola card (espandibile al tocco). Se un prodotto dura meno una volta aperto, "Segna come aperto" nel dettaglio fa ricalcolare la scadenza mostrata sulla durata che indichi tu, invece di quella stampata sulla confezione.
+
+Per prodotti senza una data stampata (es. verdura fresca), invece della data di' una durata approssimativa: "verdura tra una settimana", oppure giorni/settimane/mesi ed espressioni come "un paio di giorni" o "qualche giorno". Compare comunque con l'anello colorato come gli altri, con un'etichetta "Stima" a ricordarti che la data è approssimativa.
 
 Eliminare o consumare un prodotto non lo cancella per sempre: resta nel filtro "Storico" per 24 ore, con un tasto per ripristinarlo in caso di errore.
 
@@ -76,6 +78,7 @@ Frigo_Tracker/
 
 ## Changelog
 
+- **v2.1.0** — Riconoscimento di quantità multiple a voce/testo ("tre yogurt 16 ottobre" → 3 prodotti distinti, subito modificabili singolarmente). Vocabolario esteso per le scadenze stimate (mesi, "un paio di", "qualche", "e mezza" con arrotondamento sempre per eccesso). Prodotti con lo stesso nome raggruppati in una sola card in lista (espandibile al tocco), card più compatta. Pagina aiuto riorganizzata ad accordion.
 - **v2.0.3** — Logo nell'header ora mostra la vera icona dell'app invece delle lettere "FT"; allineati ai nuovi colori anche `theme-color` e i colori del manifest PWA, rimasti alla palette precedente.
 - **v2.0.2** — Pagina aiuto riordinata (l'introduzione era finita in fondo per errore) e ampliata con sezioni dedicate per filtri, prodotto "aperto"/scadenza stimata, storico e account, prima solo accennate in un elenco puntato finale.
 - **v2.0.1** — Aggiunta l'icona dell'app (`icons/icon-192.png`, `icons/icon-512.png`): frigo a contorno neon verde con una foglia, prima mancante (installazione PWA senza icona propria).

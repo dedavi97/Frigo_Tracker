@@ -81,6 +81,11 @@ let filtroAttivo = 'tutti';
 let idProdottoInModifica = null;
 let bozzaRiconosciuti = [];
 
+// Raggruppamento visivo in lista (solo qui, mai nel modello dati: ogni
+// prodotto resta un record indipendente in Storage). Chiavi dei gruppi
+// espansi dall'utente: transiente, non persistito, azzerato a ogni ricarica.
+let gruppiEspansi = new Set();
+
 /* ---------------- Utility date/stato ---------------- */
 
 function giorniAllaScadenza(scadenzaISO) {
@@ -166,41 +171,139 @@ function renderLista() {
 
   // Linea di consumo: separatore visivo (nessun cambio di colore/urgenza)
   // nel punto della lista, già ordinata per scadenza, dove cade la data
-  // impostata dall'utente. Va inserito prima della prima card che scade a
-  // quella data o dopo; se nessuna, finisce in fondo alla lista.
+  // impostata dall'utente. Il raggruppamento (vedi renderGruppiProdotti) è
+  // applicato separatamente prima e dopo la linea, cosicché un gruppo con
+  // membri a cavallo della linea si divida automaticamente in due card.
   const lineaConsumo = getLineaConsumo();
-  let lineaMostrata = !lineaConsumo;
 
-  filtrati.forEach(p => {
-    if (!lineaMostrata && scadenzaAttiva(p) >= lineaConsumo) {
-      els.list.appendChild(creaDivisoreLinea(lineaConsumo));
-      lineaMostrata = true;
+  if (!lineaConsumo) {
+    renderGruppiProdotti(filtrati);
+    return;
+  }
+
+  let indiceSplit = filtrati.findIndex(p => scadenzaAttiva(p) >= lineaConsumo);
+  if (indiceSplit === -1) indiceSplit = filtrati.length;
+
+  renderGruppiProdotti(filtrati.slice(0, indiceSplit));
+  els.list.appendChild(creaDivisoreLinea(lineaConsumo));
+  renderGruppiProdotti(filtrati.slice(indiceSplit));
+}
+
+// Prodotti con lo stesso nome esatto (spazi e caratteri invisibili
+// normalizzati prima del confronto) vengono aggregati in una sola card di
+// gruppo; nomi anche solo leggermente diversi restano sempre separati,
+// nessun accorpamento parziale/fuzzy. Puro calcolo di visualizzazione: non
+// tocca mai Storage né il modello dati (ogni prodotto resta un record
+// indipendente con il proprio stato/tag/note).
+function normalizzaNome(nome) {
+  return (nome || '').replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+}
+
+function chiaveGruppo(nome) {
+  return normalizzaNome(nome).toLowerCase();
+}
+
+function renderGruppiProdotti(lista) {
+  const gruppi = new Map();
+  lista.forEach(p => {
+    const chiave = chiaveGruppo(p.nome);
+    if (!gruppi.has(chiave)) gruppi.set(chiave, []);
+    gruppi.get(chiave).push(p);
+  });
+
+  // L'ordine di inserimento in Map corrisponde all'ordine di scadenza (lista
+  // è già ordinata), quindi sia i gruppi tra loro sia i membri dentro ogni
+  // gruppo restano ordinati per scadenza senza bisogno di un sort aggiuntivo.
+  gruppi.forEach((membri, chiave) => {
+    if (membri.length === 1) {
+      els.list.appendChild(creaCardProdotto(membri[0]));
+    } else {
+      creaCardGruppo(chiave, membri).forEach(li => els.list.appendChild(li));
     }
+  });
+}
 
-    const giorni = giorniAllaScadenza(scadenzaAttiva(p));
+function creaCardProdotto(p, extraClass) {
+  const giorni = giorniAllaScadenza(scadenzaAttiva(p));
+  const stato = statoDaGiorni(giorni);
+  const scala = (p.aperto && p.durataApertoGiorni) ? Number(p.durataApertoGiorni) : 14;
+  const li = document.createElement('li');
+  li.className = 'product-card' + (extraClass ? ' ' + extraClass : '');
+  li.dataset.id = p.id;
+  li.innerHTML = `
+    ${creaAnello(giorni, stato, scala)}
+    <div class="product-info">
+      <p class="product-name">${escapeHtml(p.nome)}</p>
+      <p class="product-meta">
+        <span>Scade ${formattaData(scadenzaAttiva(p))}</span>
+        ${p.aperto ? `<span class="tag-aperto">Aperto</span>` : ''}
+        ${p.scadenzaStimata ? `<span class="tag-stima">Stima</span>` : ''}
+        ${p.motivo ? `<span class="tag-motivo">${escapeHtml(p.motivo)}</span>` : ''}
+      </p>
+    </div>`;
+  li.addEventListener('click', () => apriDettaglio(p.id));
+  return li;
+}
+
+// Pallino colorato compatto per i membri "secondari" di un gruppo compresso
+// (tutti tranne quello che scade prima, mostrato in evidenza con l'anello
+// grande) — stesso stato/colore di oggi, solo in formato più piccolo.
+function creaMiniIndicatore(p) {
+  const giorni = giorniAllaScadenza(scadenzaAttiva(p));
+  const stato = statoDaGiorni(giorni);
+  const etichetta = giorni < 0 ? 'Scad.' : giorni === 0 ? 'Oggi' : `${giorni}g`;
+  return `<span class="group-mini-dot status-${stato}">${etichetta}</span>`;
+}
+
+// Card di gruppo: compressa (di default) mostra solo il membro che scade
+// prima in evidenza + mini-indicatori degli altri, click per espandere;
+// espansa mostra un'intestazione compatta + una creaCardProdotto() per ogni
+// membro, con tutte le azioni già esistenti per un prodotto singolo (il
+// click apre lo stesso dettaglio di sempre, nessuna funzione nuova lì).
+function creaCardGruppo(chiave, membri) {
+  const espanso = gruppiEspansi.has(chiave);
+
+  if (!espanso) {
+    const primo = membri[0];
+    const altri = membri.slice(1);
+    const giorni = giorniAllaScadenza(scadenzaAttiva(primo));
     const stato = statoDaGiorni(giorni);
-    const scala = (p.aperto && p.durataApertoGiorni) ? Number(p.durataApertoGiorni) : 14;
+    const scala = (primo.aperto && primo.durataApertoGiorni) ? Number(primo.durataApertoGiorni) : 14;
     const li = document.createElement('li');
-    li.className = 'product-card';
-    li.dataset.id = p.id;
+    li.className = 'product-card product-card--group';
     li.innerHTML = `
       ${creaAnello(giorni, stato, scala)}
       <div class="product-info">
-        <p class="product-name">${escapeHtml(p.nome)}</p>
+        <p class="product-name">${escapeHtml(primo.nome)} <span class="group-count">× ${membri.length}</span></p>
         <p class="product-meta">
-          <span>Scade ${formattaData(scadenzaAttiva(p))}</span>
-          ${p.aperto ? `<span class="tag-aperto">Aperto</span>` : ''}
-          ${p.scadenzaStimata ? `<span class="tag-stima">Stima</span>` : ''}
-          ${p.motivo ? `<span class="tag-motivo">${escapeHtml(p.motivo)}</span>` : ''}
+          <span>Scade ${formattaData(scadenzaAttiva(primo))}</span>
+          ${primo.aperto ? `<span class="tag-aperto">Aperto</span>` : ''}
+          ${primo.scadenzaStimata ? `<span class="tag-stima">Stima</span>` : ''}
+          ${primo.motivo ? `<span class="tag-motivo">${escapeHtml(primo.motivo)}</span>` : ''}
         </p>
+        ${altri.length ? `<p class="group-mini-list">${altri.map(creaMiniIndicatore).join('')}</p>` : ''}
       </div>`;
-    li.addEventListener('click', () => apriDettaglio(p.id));
-    els.list.appendChild(li);
+    li.addEventListener('click', () => {
+      gruppiEspansi.add(chiave);
+      renderLista();
+    });
+    return [li];
+  }
+
+  const header = document.createElement('li');
+  header.className = 'product-card product-card--group-header';
+  header.innerHTML = `
+    <div class="product-info">
+      <p class="product-name">${escapeHtml(membri[0].nome)} <span class="group-count">× ${membri.length}</span></p>
+    </div>
+    <button type="button" class="btn-group-comprimi">Comprimi</button>`;
+  header.querySelector('.btn-group-comprimi').addEventListener('click', (e) => {
+    e.stopPropagation();
+    gruppiEspansi.delete(chiave);
+    renderLista();
   });
 
-  if (!lineaMostrata) {
-    els.list.appendChild(creaDivisoreLinea(lineaConsumo));
-  }
+  return [header, ...membri.map(p => creaCardProdotto(p, 'product-card--group-member'))];
 }
 
 function creaDivisoreLinea(dataISO) {
@@ -576,6 +679,14 @@ els.btnHelp.addEventListener('click', () => {
   els.viewHelp.classList.remove('hidden');
 });
 els.btnCloseHelp.addEventListener('click', () => els.viewHelp.classList.add('hidden'));
+
+// Pagina aiuto a sezioni comprimibili: un solo listener delegato invece di
+// uno per sezione, dato che il numero di sezioni cresce nel tempo.
+document.querySelector('.help-body').addEventListener('click', (e) => {
+  const toggle = e.target.closest('.help-accordion-toggle');
+  if (!toggle) return;
+  toggle.closest('.help-accordion').classList.toggle('is-open');
+});
 
 /* ---------------- Linea di consumo ----------------
    Data target impostabile liberamente, non legata a nessun prodotto:
