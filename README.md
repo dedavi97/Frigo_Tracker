@@ -78,6 +78,7 @@ Frigo_Tracker/
 
 ## Changelog
 
+- **v2.1.4** — La sezione "Novità" in pagina aiuto includeva per errore solo i cambi di aspetto grafico: aggiunte le voci mancanti su quantità multiple e vocabolario esteso (v2.1.0) e sul fix "primo"/Primosale (v2.1.1); rinominata da "Novità di interfaccia" a "Novità" perché copre anche le nuove funzionalità, non solo il restyle.
 - **v2.1.3** — La sezione "Novità di interfaccia" nella pagina aiuto ora elenca una voce per versione (invece di un elenco unico senza riferimento a quale versione), con solo le novità che l'utente vede o usa davvero.
 - **v2.1.2** — Annullata la compattazione della card prodotto in lista introdotta in v2.1.0 (il problema di spazio segnalato era nel dettaglio, non lì): tornata alla spaziatura precedente. Aggiunta in pagina aiuto una sezione dedicata alle sole novità di aspetto/interazione, separata dal changelog completo.
 - **v2.1.1** — Corretto un falso positivo nel riconoscimento delle quantità multiple: un nome prodotto che inizia per "primo" (es. "Primosale") non viene più letto come quantità 1 + il resto del nome.
