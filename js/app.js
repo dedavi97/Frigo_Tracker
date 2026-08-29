@@ -36,6 +36,7 @@ const els = {
   btnConsumato: document.getElementById('btn-consumato'),
   btnElimina: document.getElementById('btn-elimina'),
   btnRipristina: document.getElementById('btn-ripristina'),
+  btnDuplica: document.getElementById('btn-duplica'),
 
   aperturaInfo: document.getElementById('apertura-info'),
   aperturaData: document.getElementById('apertura-data'),
@@ -602,6 +603,29 @@ els.btnRipristina.addEventListener('click', () => {
   Storage.ripristina(idProdottoInModifica);
   mostraToast('Prodotto ripristinato');
   chiudiDettaglio();
+});
+
+// Duplica: nuovo record indipendente (nuovo id, nessun legame con
+// l'originale dopo la creazione). Non eredita lo stato "aperto" — Storage.
+// aggiungi() copia solo i campi passati esplicitamente qui sotto, quindi
+// aperto/dataApertura/durataApertoGiorni restano fuori senza bisogno di
+// escluderli a mano. Nasce sempre attivo (anche duplicando dallo storico):
+// altrimenti il nuovo prodotto non comparirebbe da nessuna parte dopo la
+// navigazione automatica al suo dettaglio, richiesta subito sotto.
+els.btnDuplica.addEventListener('click', () => {
+  if (!idProdottoInModifica) return;
+  const originale = Storage.getById(idProdottoInModifica);
+  if (!originale) return;
+  const duplicato = Storage.aggiungi({
+    nome: originale.nome,
+    scadenza: originale.scadenza,
+    acquisto: originale.acquisto,
+    motivo: originale.motivo,
+    note: originale.note,
+    scadenzaStimata: originale.scadenzaStimata
+  });
+  mostraToast('Prodotto duplicato');
+  apriDettaglio(duplicato.id);
 });
 
 /* ---------------- Prodotto "aperto" ---------------- */

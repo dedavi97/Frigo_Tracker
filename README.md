@@ -78,6 +78,7 @@ Frigo_Tracker/
 
 ## Changelog
 
+- **v2.2.0** — Nuovo pulsante "Duplica" nel dettaglio prodotto: crea una copia indipendente (nuovo id) con stessi nome/scadenza/acquisto/motivo/note, sempre attiva e mai "aperta" anche se l'originale lo era, con navigazione automatica al dettaglio del duplicato appena creato.
 - **v2.1.4** — La sezione "Novità" in pagina aiuto includeva per errore solo i cambi di aspetto grafico: aggiunte le voci mancanti su quantità multiple e vocabolario esteso (v2.1.0) e sul fix "primo"/Primosale (v2.1.1); rinominata da "Novità di interfaccia" a "Novità" perché copre anche le nuove funzionalità, non solo il restyle.
 - **v2.1.3** — La sezione "Novità di interfaccia" nella pagina aiuto ora elenca una voce per versione (invece di un elenco unico senza riferimento a quale versione), con solo le novità che l'utente vede o usa davvero.
 - **v2.1.2** — Annullata la compattazione della card prodotto in lista introdotta in v2.1.0 (il problema di spazio segnalato era nel dettaglio, non lì): tornata alla spaziatura precedente. Aggiunta in pagina aiuto una sezione dedicata alle sole novità di aspetto/interazione, separata dal changelog completo.
