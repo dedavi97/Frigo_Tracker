@@ -67,14 +67,25 @@ function numeroDurataDaTesto(token) {
 
 // Per il riconoscimento di quantità multiple in testa al nome prodotto
 // ("tre yogurt", "2 mele"): stesso vocabolario numerico delle durate stimate,
-// riusato qui per lo stesso motivo (evitare una terza mappa di numeri).
-const QUANTITA_REGEX = new RegExp(`^(${NOME_NUMERO_DURATA})\\s+`, 'i');
+// tranne "primo" (escluso qui sotto). Lì ha senso solo per il giorno del
+// mese ("il primo settembre"), ma come quantità genera falsi positivi su
+// nomi prodotto che iniziano per "primo" (es. "Primosale" letto come
+// quantità 1 + prodotto "Sale") — bug reale trovato con un prodotto vero.
+const NUMERI_QUANTITA = Object.assign({}, NUMERI_DURATA);
+delete NUMERI_QUANTITA.primo;
+const NOME_NUMERO_QUANTITA = Object.keys(NUMERI_QUANTITA).concat(['\\d{1,2}']).join('|');
+const QUANTITA_REGEX = new RegExp(`^(${NOME_NUMERO_QUANTITA})\\s+`, 'i');
+
+function numeroQuantitaDaTesto(token) {
+  if (/^\d{1,2}$/.test(token)) return parseInt(token, 10);
+  return NUMERI_QUANTITA[token.toLowerCase()] || null;
+}
 
 function estraiQuantita(nomeGrezzo) {
   const m = nomeGrezzo.match(QUANTITA_REGEX);
   if (!m) return { quantita: 1, nome: nomeGrezzo };
   const resto = nomeGrezzo.slice(m[0].length).trim();
-  const q = numeroDurataDaTesto(m[1]);
+  const q = numeroQuantitaDaTesto(m[1]);
   if (!q || q < 1 || !resto) return { quantita: 1, nome: nomeGrezzo };
   return { quantita: q, nome: resto };
 }

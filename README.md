@@ -78,6 +78,7 @@ Frigo_Tracker/
 
 ## Changelog
 
+- **v2.1.1** — Corretto un falso positivo nel riconoscimento delle quantità multiple: un nome prodotto che inizia per "primo" (es. "Primosale") non viene più letto come quantità 1 + il resto del nome.
 - **v2.1.0** — Riconoscimento di quantità multiple a voce/testo ("tre yogurt 16 ottobre" → 3 prodotti distinti, subito modificabili singolarmente). Vocabolario esteso per le scadenze stimate (mesi, "un paio di", "qualche", "e mezza" con arrotondamento sempre per eccesso). Prodotti con lo stesso nome raggruppati in una sola card in lista (espandibile al tocco), card più compatta. Pagina aiuto riorganizzata ad accordion.
 - **v2.0.3** — Logo nell'header ora mostra la vera icona dell'app invece delle lettere "FT"; allineati ai nuovi colori anche `theme-color` e i colori del manifest PWA, rimasti alla palette precedente.
 - **v2.0.2** — Pagina aiuto riordinata (l'introduzione era finita in fondo per errore) e ampliata con sezioni dedicate per filtri, prodotto "aperto"/scadenza stimata, storico e account, prima solo accennate in un elenco puntato finale.
