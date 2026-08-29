@@ -78,6 +78,7 @@ Frigo_Tracker/
 
 ## Changelog
 
+- **v2.1.3** — La sezione "Novità di interfaccia" nella pagina aiuto ora elenca una voce per versione (invece di un elenco unico senza riferimento a quale versione), con solo le novità che l'utente vede o usa davvero.
 - **v2.1.2** — Annullata la compattazione della card prodotto in lista introdotta in v2.1.0 (il problema di spazio segnalato era nel dettaglio, non lì): tornata alla spaziatura precedente. Aggiunta in pagina aiuto una sezione dedicata alle sole novità di aspetto/interazione, separata dal changelog completo.
 - **v2.1.1** — Corretto un falso positivo nel riconoscimento delle quantità multiple: un nome prodotto che inizia per "primo" (es. "Primosale") non viene più letto come quantità 1 + il resto del nome.
 - **v2.1.0** — Riconoscimento di quantità multiple a voce/testo ("tre yogurt 16 ottobre" → 3 prodotti distinti, subito modificabili singolarmente). Vocabolario esteso per le scadenze stimate (mesi, "un paio di", "qualche", "e mezza" con arrotondamento sempre per eccesso). Prodotti con lo stesso nome raggruppati in una sola card in lista (espandibile al tocco), card più compatta. Pagina aiuto riorganizzata ad accordion.
