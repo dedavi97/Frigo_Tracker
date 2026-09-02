@@ -67,6 +67,19 @@ service cloud.firestore {
           && !(request.auth.uid in membriPost());
       }
 
+      // Abbandono del creatore quando restano altri membri: oltre a togliersi
+      // dai membri, passa "creatoDa" a un membro ancora presente (il client
+      // sceglie il più anziano). Nessun altro campo può cambiare.
+      function isLeaveCreatore() {
+        return request.auth.uid == resource.data.creatoDa
+          && (request.auth.uid in membriPre())
+          && soloCampiCambiati(['membri', 'creatoDa'])
+          && membriPre().keys().size() == membriPost().keys().size() + 1
+          && membriPre().keys().hasAll(membriPost().keys())
+          && !(request.auth.uid in membriPost())
+          && (request.resource.data.creatoDa in membriPost());
+      }
+
       // Rigenerazione del codice invito: solo il creatore, cambia solo "codice".
       function isRigeneraCodice() {
         return request.auth.uid == resource.data.creatoDa
@@ -85,7 +98,7 @@ service cloud.firestore {
         && request.resource.data.codice is string;
 
       allow update: if request.auth != null && (
-        isModificaContenuti() || isJoin() || isLeave() || isRigeneraCodice()
+        isModificaContenuti() || isJoin() || isLeave() || isLeaveCreatore() || isRigeneraCodice()
       );
 
       allow delete: if request.auth != null

@@ -619,25 +619,73 @@ const Storage = {
       });
   },
 
-  // Abbandona la casa: prima fonde la fotografia locale della casa nello
-  // storage personale (i prodotti della casa vincono per id), poi si toglie
-  // dai membri. Da qui in poi quei prodotti sono "personali" a tutti gli
-  // effetti: se si è loggati, la normale riconciliazione li propone per il
-  // caricamento sul cloud personale. "Scollegato" vale solo verso la casa:
-  // gli altri membri non vedono più nulla di questo dispositivo.
+  // Abbandona la casa: la fotografia locale della casa viene comunque fusa
+  // nello storage personale (i prodotti della casa vincono per id — vedi
+  // _uscitaCasaLocale). Da qui in poi quei prodotti sono "personali" a tutti
+  // gli effetti: se si è loggati, la normale riconciliazione li propone per il
+  // caricamento sul cloud personale. "Scollegato" vale solo verso la casa: gli
+  // altri membri non vedono più nulla di questo dispositivo.
+  //
+  // Tre casi lato server:
+  //  - restano altri membri e NON ero il creatore → tolgo solo la mia uid;
+  //  - restano altri membri ed ERO il creatore → tolgo la mia uid e passo
+  //    `creatoDa` al membro più anziano (chi è entrato per primo), così il
+  //    codice invito resta rigenerabile;
+  //  - ero l'ultimo membro → pulizia completa (prodotti + documento casa +
+  //    mapping codice invito), niente documenti orfani da tenere lì.
   abbandonaCasa() {
     const utente = window.Auth ? Auth.utenteCorrente() : null;
     const casaId = this._casaId;
     if (!casaId) return Promise.resolve();
 
+    const membri = (this._casaDoc && this._casaDoc.membri) || {};
+    const altri = Object.keys(membri).filter(u => !utente || u !== utente.uid);
+
     let p = Promise.resolve();
     if (utente && typeof firebase !== 'undefined') {
-      const patch = {};
-      patch['membri.' + utente.uid] = firebase.firestore.FieldValue.delete();
-      p = firebase.firestore().collection('case').doc(casaId).update(patch)
-        .catch(e => console.error('Errore uscita casa (si esce comunque in locale)', e));
+      if (altri.length === 0) {
+        p = this._svuotaCasaCompletamente(casaId)
+          .catch(e => console.error('Errore pulizia casa (si esce comunque in locale)', e));
+      } else {
+        const patch = {};
+        patch['membri.' + utente.uid] = firebase.firestore.FieldValue.delete();
+        if (this._casaDoc && this._casaDoc.creatoDa === utente.uid) {
+          patch['creatoDa'] = this._membroPiuAnziano(membri, altri);
+        }
+        p = firebase.firestore().collection('case').doc(casaId).update(patch)
+          .catch(e => console.error('Errore uscita casa (si esce comunque in locale)', e));
+      }
     }
     return p.then(() => this._uscitaCasaLocale());
+  },
+
+  _membroPiuAnziano(membri, uidCandidati) {
+    return uidCandidati.slice().sort((a, b) => {
+      const ta = (membri[a] && membri[a].entratoIl) || '';
+      const tb = (membri[b] && membri[b].entratoIl) || '';
+      return ta.localeCompare(tb);
+    })[0];
+  },
+
+  // Cancella tutto ciò che riguarda una casa rimasta senza membri: prima i
+  // prodotti (finché sono ancora membro le regole me lo permettono), poi il
+  // mapping del codice invito, poi il documento casa. Tutto in un batch: le
+  // regole valutano ogni scrittura sullo stato PRECEDENTE al batch, quindi
+  // l'ordine dentro il batch non conta, conta solo che il documento casa e la
+  // mia membership esistano ancora (ed esistono, non ho ancora fatto l'update
+  // di uscita). Limite Firestore: 500 scritture per batch — più che
+  // sufficiente per un frigo.
+  _svuotaCasaCompletamente(casaId) {
+    const db = firebase.firestore();
+    const casaRef = db.collection('case').doc(casaId);
+    const codice = this._casaDoc && this._casaDoc.codice;
+    return casaRef.collection('prodotti').get().then(snap => {
+      const batch = db.batch();
+      snap.docs.forEach(d => batch.delete(d.ref));
+      if (codice) batch.delete(db.collection('codiciInvito').doc(codice));
+      batch.delete(casaRef);
+      return batch.commit();
+    });
   },
 
   // Solo il creatore. batch: elimina il vecchio mapping, ne crea uno nuovo,

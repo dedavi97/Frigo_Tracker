@@ -566,6 +566,7 @@ h1, h2, h3 {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 4px 10px;
+  cursor: pointer;
 }
 .casa-mini-btn {
   margin-left: auto;

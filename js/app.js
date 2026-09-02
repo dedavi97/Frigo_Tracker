@@ -884,14 +884,21 @@ els.btnEntraCasa.addEventListener('click', () => {
     .finally(() => { els.btnEntraCasa.disabled = false; });
 });
 
-els.btnCopiaCodice.addEventListener('click', () => {
+function copiaCodiceCasa() {
   const codice = els.casaCodiceCorrente.textContent;
-  if (navigator.clipboard && codice) {
+  if (!codice) return;
+  if (navigator.clipboard) {
     navigator.clipboard.writeText(codice)
-      .then(() => mostraToast('Codice copiato'))
+      .then(() => mostraToast('Codice copiato: ' + codice))
       .catch(() => mostraToast('Copia non riuscita, copialo a mano'));
+  } else {
+    mostraToast('Codice: ' + codice);
   }
-});
+}
+
+// Copia sia dal pulsante dedicato sia toccando direttamente il codice.
+els.btnCopiaCodice.addEventListener('click', copiaCodiceCasa);
+els.casaCodiceCorrente.addEventListener('click', copiaCodiceCasa);
 
 els.btnRigeneraCodice.addEventListener('click', () => {
   if (!confirm('Rigenerare il codice? Quello attuale smetterà di funzionare per nuove adesioni. I membri già dentro restano.')) return;
