@@ -492,6 +492,103 @@ h1, h2, h3 {
 .migrazione-lista .migrazione-nome { color: var(--text); font-weight: 600; }
 .migrazione-lista .migrazione-data { color: var(--text-dim); flex-shrink: 0; }
 
+#view-migrazione .btn-danger { margin-top: 2px; }
+
+/* ---------- Casa condivisa (dentro l'overlay account) ---------- */
+.casa-section {
+  margin-top: 6px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.casa-section h3 { font-size: 15px; color: var(--text); }
+.casa-section > div { display: flex; flex-direction: column; gap: 10px; }
+
+.casa-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--text-dim);
+  font-weight: 500;
+}
+.casa-campo input {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  color: var(--text);
+  padding: 11px 13px;
+  font-size: 14.5px;
+  font-family: inherit;
+}
+.casa-campo input:focus { outline: 2px solid var(--fresh); outline-offset: 1px; }
+#casa-codice-input { text-transform: uppercase; letter-spacing: 0.12em; }
+
+.casa-intestazione {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.casa-nome-corrente {
+  font-family: 'Baloo 2', sans-serif;
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--text);
+}
+.casa-badge {
+  flex-shrink: 0;
+  background: var(--fresh-bg);
+  color: var(--fresh);
+  border: 1px solid var(--fresh-dark);
+  border-radius: 999px;
+  padding: 2px 10px;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.casa-code-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--text-dim);
+}
+.casa-code {
+  font-family: ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace;
+  letter-spacing: 0.14em;
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 4px 10px;
+}
+.casa-mini-btn {
+  margin-left: auto;
+  background: var(--surface-2);
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 10px;
+  font-size: 12.5px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.casa-membri-label {
+  font-size: 12px !important;
+  color: var(--text-faint) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin: 2px 0 -2px !important;
+}
+.casa-tu { color: var(--text-dim); font-weight: 500; }
+
 /* ---------- Aiuto (accordion) ---------- */
 .help-body {
   padding: 20px;

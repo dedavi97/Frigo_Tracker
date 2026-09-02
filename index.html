@@ -86,7 +86,7 @@
       </div>
 
       <div id="pannello-linea" class="add-panel hidden">
-        <p class="add-panel-label">I prodotti che scadono prima di questa data vengono separati in home, da consumare con priorità.</p>
+        <p class="add-panel-label" id="linea-hint">I prodotti che scadono prima di questa data vengono separati in home, da consumare con priorità.</p>
         <div class="linea-consumo-form">
           <input type="date" id="f-linea-consumo">
           <button type="button" id="btn-imposta-linea" class="btn-secondary">Imposta</button>
@@ -185,6 +185,42 @@
         <p class="account-email" id="account-email"></p>
         <p>I tuoi dati sono sincronizzati su tutti i dispositivi.</p>
         <button id="btn-logout" class="btn-secondary">Esci</button>
+
+        <div class="casa-section">
+          <h3>Casa condivisa</h3>
+
+          <!-- Stato: fuori da una casa -->
+          <div id="casa-fuori">
+            <p>Condividi un unico inventario con chi vive con te (fino a 5 persone): quello che aggiunge o consuma un membro compare a tutti in tempo reale.</p>
+            <label class="casa-campo">Nome della casa (facoltativo)
+              <input type="text" id="casa-nome" placeholder="es. Casa Milano" maxlength="40">
+            </label>
+            <button type="button" id="btn-crea-casa" class="btn-secondary">Crea casa condivisa</button>
+            <label class="casa-campo">Hai un codice invito?
+              <input type="text" id="casa-codice-input" placeholder="es. K7P2QX" maxlength="6" autocapitalize="characters" autocomplete="off">
+            </label>
+            <button type="button" id="btn-entra-casa" class="btn-secondary">Entra con il codice</button>
+          </div>
+
+          <!-- Stato: dentro una casa -->
+          <div id="casa-dentro" class="hidden">
+            <div class="casa-intestazione">
+              <span id="casa-nome-corrente" class="casa-nome-corrente"></span>
+              <span id="casa-conteggio" class="casa-badge"></span>
+            </div>
+            <div class="casa-code-row">
+              <span>Codice invito</span>
+              <code id="casa-codice-corrente" class="casa-code"></code>
+              <button type="button" id="btn-copia-codice" class="casa-mini-btn">Copia</button>
+            </div>
+            <button type="button" id="btn-rigenera-codice" class="btn-secondary hidden">Rigenera codice</button>
+            <p class="casa-membri-label">Membri</p>
+            <ul id="casa-membri" class="migrazione-lista"></ul>
+            <button type="button" id="btn-abbandona-casa" class="btn-danger">Abbandona casa</button>
+          </div>
+
+          <p id="casa-caricamento" class="hidden">Caricamento della casa…</p>
+        </div>
       </div>
     </div>
   </section>
@@ -264,7 +300,7 @@
           <span class="help-accordion-icon">›</span>
         </button>
         <div class="help-accordion-content">
-          <p>Nella schermata di aggiunta prodotto (pulsante "+" in basso), scheda "Linea consumo": imposta una data e, in home, i prodotti che scadono prima vengono separati da una riga, per ricordarti di consumarli con priorità (es. prima di partire per un viaggio). Solo visivo, non cambia colori o urgenza. Resta solo su questo dispositivo: non si sincronizza con l'account.</p>
+          <p>Nella schermata di aggiunta prodotto (pulsante "+" in basso), scheda "Linea consumo": imposta una data e, in home, i prodotti che scadono prima vengono separati da una riga, per ricordarti di consumarli con priorità (es. prima di partire per un viaggio). Solo visivo, non cambia colori o urgenza. Fuori da una casa condivisa resta solo su questo dispositivo (non si sincronizza con l'account); dentro una casa condivisa è invece la stessa per tutti i membri.</p>
         </div>
       </section>
       <section class="help-accordion">
@@ -274,7 +310,20 @@
         </button>
         <div class="help-accordion-content">
           <p>Tocca l'icona account in alto a destra per accedere con Google — è sempre facoltativo, l'app funziona bene anche senza. Da loggato, l'icona mostra la tua foto profilo (o l'iniziale del nome se non disponibile), e i prodotti si sincronizzano automaticamente su tutti i dispositivi collegati allo stesso account.</p>
-          <p>Se hai già prodotti salvati solo su questo dispositivo, al primo accesso ti viene chiesto se caricarli sull'account: in ogni caso restano anche in locale, non vengono mai cancellati automaticamente.</p>
+          <p>Se hai già prodotti salvati solo su questo dispositivo, al primo accesso ti viene chiesto cosa farne: caricarli sull'account, lasciarli solo qui, oppure eliminarli definitivamente. Se scegli di lasciarli solo qui, la domanda si ripresenta alla prossima apertura.</p>
+        </div>
+      </section>
+      <section class="help-accordion">
+        <button type="button" class="help-accordion-toggle">
+          <h3>Case condivise</h3>
+          <span class="help-accordion-icon">›</span>
+        </button>
+        <div class="help-accordion-content">
+          <p>Da <strong>Account</strong> (serve prima accedere con Google) puoi creare una <strong>casa condivisa</strong>: un unico inventario per chi vive con te, fino a 5 persone. Chi crea la casa ottiene un <strong>codice invito</strong> di 6 caratteri; gli altri lo inseriscono nel campo "Entra con il codice" nella stessa schermata.</p>
+          <p>Dentro una casa tutti i membri sono alla pari: chiunque può aggiungere, modificare, consumare o eliminare qualsiasi prodotto, e i cambiamenti compaiono agli altri <strong>in tempo reale</strong>, senza ricaricare. Accanto al nome della casa un contatore tipo "3/5" mostra quanti posti restano. La lista dei membri è visibile a tutti; non viene tenuto traccia di chi ha aggiunto o consumato cosa.</p>
+          <p>Chi ha creato la casa può <strong>rigenerare il codice</strong> in qualsiasi momento: il vecchio codice smette subito di far entrare gente nuova, ma i membri già dentro restano.</p>
+          <p>La <strong>linea di consumo</strong>, quando sei in una casa, diventa condivisa: la stessa data vale per tutti i membri.</p>
+          <p>Puoi <strong>abbandonare</strong> la casa quando vuoi. Da quel momento il tuo dispositivo tiene una copia dei prodotti così com'erano all'uscita, che rientra tra i tuoi prodotti personali; la casa e gli altri membri non ne risentono. Nessuno può essere espulso da un altro membro (permessi paritari).</p>
         </div>
       </section>
       <section class="help-accordion">
@@ -285,6 +334,7 @@
         <div class="help-accordion-content">
           <p>Le novità principali che puoi vedere o usare, una voce per versione (per il changelog tecnico completo vedi il README del progetto):</p>
           <ul class="help-legend">
+            <li><strong>v2.3.0</strong> — Case condivise: un unico inventario per chi vive con te (fino a 5 persone), con codice invito, aggiornamenti in tempo reale tra i membri e linea di consumo condivisa. Al primo accesso, se hai prodotti solo su questo dispositivo, ora puoi anche eliminarli definitivamente (non solo caricarli o ignorarli)</li>
             <li><strong>v2.2.0</strong> — Nuovo pulsante "Duplica" nel dettaglio prodotto, per creare rapidamente una copia dello stesso prodotto</li>
             <li><strong>v2.1.3</strong> — Questa sezione riorganizzata una voce per versione, invece di un elenco unico</li>
             <li><strong>v2.1.1</strong> — Corretto un errore per cui un prodotto con nome che inizia per "primo" (es. "Primosale") veniva riconosciuto male aggiungendolo a voce o testo</li>
@@ -300,16 +350,17 @@
     </div>
   </section>
 
-  <!-- Overlay migrazione dati locali (mostrato una sola volta, al primo login) -->
+  <!-- Overlay dati solo locali (si ripresenta a ogni apertura finché non si sceglie) -->
   <section id="view-migrazione" class="overlay hidden">
     <div class="overlay-header">
-      <h2>Dati trovati su questo dispositivo</h2>
+      <h2 id="migrazione-titolo">Dati trovati su questo dispositivo</h2>
     </div>
     <div class="account-body">
-      <p>Hai prodotti salvati solo su questo dispositivo. Vuoi caricarli nel tuo account? Si sincronizzeranno su tutti i dispositivi. In ogni caso, restano anche qui.</p>
+      <p id="migrazione-testo">Hai prodotti salvati solo su questo dispositivo. Vuoi caricarli nel tuo account? Si sincronizzeranno su tutti i dispositivi. In ogni caso, restano anche qui.</p>
       <ul id="migrazione-lista" class="migrazione-lista"></ul>
       <button id="btn-migra-si" class="btn-primary">Carica nel mio account</button>
       <button id="btn-migra-no" class="btn-secondary">Lascia solo qui</button>
+      <button id="btn-migra-elimina" class="btn-danger">Elimina definitivamente</button>
     </div>
   </section>
 

@@ -1,0 +1,115 @@
+rules_version = '2';
+
+// =========================================================
+// Regole di sicurezza Firestore — Frigo Tracker
+//
+// Da incollare in: Console Firebase → Firestore Database → Regole → Pubblica.
+// NON vengono applicate in automatico: finché non le pubblichi, la funzione
+// "case condivise" non funziona (il resto dell'app continua a funzionare).
+//
+// Modello:
+//   utenti/{uid}/prodotti/{prodId}   → dati personali, solo il proprietario
+//   case/{casaId}                    → documento casa condivisa
+//   case/{casaId}/prodotti/{prodId}  → prodotti della casa, solo i membri
+//   codiciInvito/{codice}            → { caseId }, mapping per l'adesione
+// =========================================================
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function casaData(casaId) {
+      return get(/databases/$(database)/documents/case/$(casaId)).data;
+    }
+
+    function isMembroDi(casaId) {
+      return request.auth != null
+        && request.auth.uid in casaData(casaId).membri;
+    }
+
+    // ---- Prodotti personali: invariato, solo il proprietario ----
+    match /utenti/{uid}/prodotti/{prodId} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // ---- Documento casa ----
+    match /case/{casaId} {
+
+      function membriPre()  { return resource.data.membri; }
+      function membriPost() { return request.resource.data.membri; }
+
+      function soloCampiCambiati(campi) {
+        return request.resource.data.diff(resource.data).affectedKeys().hasOnly(campi);
+      }
+
+      // Un membro modifica contenuti condivisi (nome casa, linea di consumo).
+      function isModificaContenuti() {
+        return (request.auth.uid in membriPre())
+          && soloCampiCambiati(['nome', 'lineaConsumo']);
+      }
+
+      // Adesione: l'unico cambiamento a membri è l'aggiunta della PROPRIA uid,
+      // e prima si era sotto i 5 membri.
+      function isJoin() {
+        return !(request.auth.uid in membriPre())
+          && soloCampiCambiati(['membri'])
+          && membriPost().keys().size() == membriPre().keys().size() + 1
+          && membriPost().keys().size() <= 5
+          && membriPost().keys().hasAll(membriPre().keys())
+          && (request.auth.uid in membriPost());
+      }
+
+      // Abbandono: l'unico cambiamento a membri è la rimozione della PROPRIA uid.
+      function isLeave() {
+        return (request.auth.uid in membriPre())
+          && soloCampiCambiati(['membri'])
+          && membriPre().keys().size() == membriPost().keys().size() + 1
+          && membriPre().keys().hasAll(membriPost().keys())
+          && !(request.auth.uid in membriPost());
+      }
+
+      // Rigenerazione del codice invito: solo il creatore, cambia solo "codice".
+      function isRigeneraCodice() {
+        return request.auth.uid == resource.data.creatoDa
+          && soloCampiCambiati(['codice']);
+      }
+
+      // get aperto agli utenti autenticati: serve a mostrare nome + "N/5"
+      // prima di entrare. casaId è un id automatico non enumerabile e list è
+      // negato, quindi non è possibile scorrere le case altrui.
+      allow get: if request.auth != null;
+      allow list: if false;
+
+      allow create: if request.auth != null
+        && request.resource.data.creatoDa == request.auth.uid
+        && request.resource.data.membri.keys().hasOnly([request.auth.uid])
+        && request.resource.data.codice is string;
+
+      allow update: if request.auth != null && (
+        isModificaContenuti() || isJoin() || isLeave() || isRigeneraCodice()
+      );
+
+      allow delete: if request.auth != null
+        && request.auth.uid == resource.data.creatoDa;
+
+      // ---- Prodotti della casa: tutti i membri, permessi paritari ----
+      match /prodotti/{prodId} {
+        allow read, write: if isMembroDi(casaId);
+      }
+    }
+
+    // ---- Mapping codice invito → casa ----
+    match /codiciInvito/{codice} {
+      allow get: if request.auth != null;
+      allow list: if false;
+
+      // Solo il creatore della casa puntata può creare/eliminare il mapping
+      // (creazione iniziale e rigenerazione del codice).
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['caseId'])
+        && request.auth.uid == casaData(request.resource.data.caseId).creatoDa;
+      allow delete: if request.auth != null
+        && request.auth.uid == casaData(resource.data.caseId).creatoDa;
+      allow update: if false;
+    }
+  }
+}

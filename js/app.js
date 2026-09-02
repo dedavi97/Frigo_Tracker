@@ -70,10 +70,30 @@ const els = {
   btnGoogleLogin: document.getElementById('btn-google-login'),
   btnLogout: document.getElementById('btn-logout'),
 
+  casaFuori: document.getElementById('casa-fuori'),
+  casaDentro: document.getElementById('casa-dentro'),
+  casaCaricamento: document.getElementById('casa-caricamento'),
+  casaNomeInput: document.getElementById('casa-nome'),
+  casaCodiceInput: document.getElementById('casa-codice-input'),
+  btnCreaCasa: document.getElementById('btn-crea-casa'),
+  btnEntraCasa: document.getElementById('btn-entra-casa'),
+  casaNomeCorrente: document.getElementById('casa-nome-corrente'),
+  casaConteggio: document.getElementById('casa-conteggio'),
+  casaCodiceCorrente: document.getElementById('casa-codice-corrente'),
+  btnCopiaCodice: document.getElementById('btn-copia-codice'),
+  btnRigeneraCodice: document.getElementById('btn-rigenera-codice'),
+  casaMembri: document.getElementById('casa-membri'),
+  btnAbbandonaCasa: document.getElementById('btn-abbandona-casa'),
+
+  lineaHint: document.getElementById('linea-hint'),
+
   viewMigrazione: document.getElementById('view-migrazione'),
+  migrazioneTitolo: document.getElementById('migrazione-titolo'),
+  migrazioneTesto: document.getElementById('migrazione-testo'),
   migrazioneLista: document.getElementById('migrazione-lista'),
   btnMigraSi: document.getElementById('btn-migra-si'),
   btnMigraNo: document.getElementById('btn-migra-no'),
+  btnMigraElimina: document.getElementById('btn-migra-elimina'),
 
   toast: document.getElementById('toast')
 };
@@ -715,41 +735,62 @@ document.querySelector('.help-body').addEventListener('click', (e) => {
 /* ---------------- Linea di consumo ----------------
    Data target impostabile liberamente, non legata a nessun prodotto:
    solo effetto visivo (un separatore in lista), niente cambi di colore o
-   urgenza. Salvata solo sul dispositivo (localStorage), non sincronizzata
-   via account: è un promemoria locale, non un dato del prodotto. Una sola
-   linea attiva alla volta: impostarne una nuova sostituisce la precedente.
+   urgenza. Una sola linea attiva alla volta: impostarne una nuova sostituisce
+   la precedente.
+
+   Fuori da una casa condivisa è un promemoria di dispositivo, salvato solo
+   in localStorage e non sincronizzato (come sempre). Dentro una casa
+   condivisa diventa invece un dato della casa (punto 10): stessa data per
+   tutti i membri, aggiornata in tempo reale via Storage.onCasaChange.
    ========================================================= */
 
 const LINEA_CONSUMO_KEY = 'frigo_tracker_linea_consumo';
 
 function getLineaConsumo() {
+  if (Storage.inCasa()) {
+    const info = Storage.getCasaInfo();
+    return (info && !info.caricamento && info.lineaConsumo) || null;
+  }
   return localStorage.getItem(LINEA_CONSUMO_KEY) || null;
-}
-
-function setLineaConsumo(dataISO) {
-  if (dataISO) localStorage.setItem(LINEA_CONSUMO_KEY, dataISO);
-  else localStorage.removeItem(LINEA_CONSUMO_KEY);
 }
 
 function aggiornaUILineaConsumo() {
   const data = getLineaConsumo();
   els.fLineaConsumo.value = data || '';
   els.btnRimuoviLinea.classList.toggle('hidden', !data);
+  if (els.lineaHint) {
+    els.lineaHint.textContent = Storage.inCasa()
+      ? 'Condivisa con la casa: la stessa data vale per tutti i membri. I prodotti che scadono prima vengono separati in home.'
+      : 'I prodotti che scadono prima di questa data vengono separati in home, da consumare con priorità.';
+  }
 }
 
 els.btnImpostaLinea.addEventListener('click', () => {
-  if (!els.fLineaConsumo.value) {
+  const data = els.fLineaConsumo.value;
+  if (!data) {
     mostraToast('Scegli prima una data');
     return;
   }
-  setLineaConsumo(els.fLineaConsumo.value);
+  if (Storage.inCasa()) {
+    Storage.setLineaConsumoCasa(data)
+      .then(() => mostraToast('Linea di consumo condivisa impostata'))
+      .catch(() => mostraToast('Errore, riprova'));
+    return;
+  }
+  localStorage.setItem(LINEA_CONSUMO_KEY, data);
   mostraToast('Linea di consumo impostata');
   aggiornaUILineaConsumo();
   renderLista();
 });
 
 els.btnRimuoviLinea.addEventListener('click', () => {
-  setLineaConsumo(null);
+  if (Storage.inCasa()) {
+    Storage.setLineaConsumoCasa(null)
+      .then(() => mostraToast('Linea di consumo rimossa'))
+      .catch(() => mostraToast('Errore, riprova'));
+    return;
+  }
+  localStorage.removeItem(LINEA_CONSUMO_KEY);
   mostraToast('Linea di consumo rimossa');
   aggiornaUILineaConsumo();
   renderLista();
@@ -771,7 +812,104 @@ function aggiornaViewAccount() {
   els.accountLoggedIn.classList.toggle('hidden', !utente);
   if (utente) els.accountEmail.textContent = utente.email || '';
   aggiornaBottoneAccount(utente);
+  aggiornaViewCasa();
 }
+
+/* ---------------- Casa condivisa ----------------
+   Sezione dentro l'overlay Account, visibile solo da loggati. Due stati:
+   "fuori da una casa" (crea / entra col codice) e "dentro una casa" (nome +
+   contatore N/5, codice invito, lista membri, rigenera codice se sei il
+   creatore, abbandona). Si ridisegna a ogni Storage.onCasaChange (un altro
+   membro entra/esce, il creatore rigenera il codice, cambia la linea).
+   ========================================================= */
+
+function aggiornaViewCasa() {
+  const utente = Auth.utenteCorrente();
+  if (!utente) return;   // il blocco padre (#account-logged-in) è già nascosto
+
+  const info = Storage.getCasaInfo();
+
+  if (info && info.caricamento) {
+    els.casaFuori.classList.add('hidden');
+    els.casaDentro.classList.add('hidden');
+    els.casaCaricamento.classList.remove('hidden');
+    return;
+  }
+  els.casaCaricamento.classList.add('hidden');
+
+  if (!info) {
+    els.casaFuori.classList.remove('hidden');
+    els.casaDentro.classList.add('hidden');
+    return;
+  }
+
+  els.casaFuori.classList.add('hidden');
+  els.casaDentro.classList.remove('hidden');
+
+  els.casaNomeCorrente.textContent = info.nome;
+  els.casaConteggio.textContent = Object.keys(info.membri).length + '/5';
+  els.casaCodiceCorrente.textContent = info.codice;
+  els.btnRigeneraCodice.classList.toggle('hidden', !info.sonoCreatore);
+
+  const mioUid = utente.uid;
+  els.casaMembri.innerHTML = Object.entries(info.membri).map(([uid, m]) => {
+    const nome = escapeHtml(m.nome || m.email || 'Membro');
+    const io = uid === mioUid ? ' <span class="casa-tu">(tu)</span>' : '';
+    const email = m.email ? `<span class="migrazione-data">${escapeHtml(m.email)}</span>` : '';
+    return `<li><span class="migrazione-nome">${nome}${io}</span>${email}</li>`;
+  }).join('');
+}
+
+els.btnCreaCasa.addEventListener('click', () => {
+  els.btnCreaCasa.disabled = true;
+  Storage.creaCasa(els.casaNomeInput.value)
+    .then(() => { mostraToast('Casa condivisa creata'); els.casaNomeInput.value = ''; })
+    .catch((e) => mostraToast('Non riesco a creare la casa: ' + (e.message || 'errore')))
+    .finally(() => { els.btnCreaCasa.disabled = false; });
+});
+
+els.btnEntraCasa.addEventListener('click', () => {
+  const codice = els.casaCodiceInput.value.trim();
+  if (!codice) { mostraToast('Inserisci il codice invito'); return; }
+  els.btnEntraCasa.disabled = true;
+  Storage.entraInCasaConCodice(codice)
+    .then(() => { mostraToast('Sei entrato nella casa'); els.casaCodiceInput.value = ''; })
+    .catch((e) => {
+      const msg = e && e.motivo === 'piena' ? 'Questa casa ha già 5 membri'
+        : e && e.motivo === 'gia-dentro' ? 'Sei già in questa casa'
+        : e && e.motivo === 'non-valido' ? 'Codice non valido'
+        : 'Non riesco a entrare: ' + ((e && e.message) || 'errore');
+      mostraToast(msg);
+    })
+    .finally(() => { els.btnEntraCasa.disabled = false; });
+});
+
+els.btnCopiaCodice.addEventListener('click', () => {
+  const codice = els.casaCodiceCorrente.textContent;
+  if (navigator.clipboard && codice) {
+    navigator.clipboard.writeText(codice)
+      .then(() => mostraToast('Codice copiato'))
+      .catch(() => mostraToast('Copia non riuscita, copialo a mano'));
+  }
+});
+
+els.btnRigeneraCodice.addEventListener('click', () => {
+  if (!confirm('Rigenerare il codice? Quello attuale smetterà di funzionare per nuove adesioni. I membri già dentro restano.')) return;
+  els.btnRigeneraCodice.disabled = true;
+  Storage.rigeneraCodiceCasa()
+    .then((nuovo) => mostraToast('Nuovo codice: ' + nuovo))
+    .catch((e) => mostraToast('Non riesco a rigenerare: ' + (e.message || 'errore')))
+    .finally(() => { els.btnRigeneraCodice.disabled = false; });
+});
+
+els.btnAbbandonaCasa.addEventListener('click', () => {
+  if (!confirm('Abbandonare questa casa? Terrai una copia dei prodotti così come sono ora, tra i tuoi prodotti personali. Gli altri membri non ne risentono.')) return;
+  els.btnAbbandonaCasa.disabled = true;
+  Storage.abbandonaCasa()
+    .then(() => mostraToast('Hai abbandonato la casa'))
+    .catch((e) => mostraToast('Errore durante l\'uscita: ' + (e.message || 'errore')))
+    .finally(() => { els.btnAbbandonaCasa.disabled = false; });
+});
 
 const ICONA_ACCOUNT = '<svg viewBox="0 0 24 24" width="20" height="20"><path d="M12 12a5 5 0 1 0 0-10 5 5 0 0 0 0 10Zm0 2c-4.4 0-8 2.2-8 5v2h16v-2c0-2.8-3.6-5-8-5Z" fill="currentColor"/></svg>';
 
@@ -819,7 +957,12 @@ els.btnLogout.addEventListener('click', () => {
   mostraToast('Disconnesso');
 });
 
-/* ---------------- Prodotti solo locali in attesa di conferma ---------------- */
+/* ---------------- Prodotti solo locali in attesa di conferma ----------------
+   Tre opzioni esplicite (punto 4), sia per la sync personale sia per
+   l'adesione a una casa: Aggiungi (carica su account/casa) / Lascia solo qui
+   (resta locale, si ri-chiede alla prossima apertura) / Elimina definitivamente
+   (rimozione irreversibile, con conferma). Il testo cambia in base al contesto.
+   ========================================================= */
 
 function renderListaMigrazione(prodotti) {
   els.migrazioneLista.innerHTML = prodotti.map(p => `
@@ -830,15 +973,35 @@ function renderListaMigrazione(prodotti) {
   `).join('');
 }
 
+function mostraPromptSoloLocali(prodotti, contesto) {
+  renderListaMigrazione(prodotti);
+  const casa = contesto === 'casa';
+  els.migrazioneTitolo.textContent = casa
+    ? 'Prodotti non ancora nella casa'
+    : 'Dati trovati su questo dispositivo';
+  els.migrazioneTesto.textContent = casa
+    ? 'Hai prodotti salvati solo su questo dispositivo, non nella casa condivisa. Cosa vuoi farne?'
+    : 'Hai prodotti salvati solo su questo dispositivo. Vuoi caricarli nel tuo account? Si sincronizzeranno su tutti i dispositivi.';
+  els.btnMigraSi.textContent = casa ? 'Aggiungi alla casa' : 'Carica nel mio account';
+  els.viewMigrazione.classList.remove('hidden');
+}
+
 els.btnMigraSi.addEventListener('click', () => {
   Storage.confermaCaricamentoSoloLocali()
-    .then(() => mostraToast('Dati caricati nel tuo account'))
+    .then(() => mostraToast('Prodotti aggiunti'))
     .catch(() => mostraToast('Errore durante il caricamento, riprova più tardi'));
   els.viewMigrazione.classList.add('hidden');
 });
 
 els.btnMigraNo.addEventListener('click', () => {
   Storage.rifiutaCaricamentoSoloLocali();
+  els.viewMigrazione.classList.add('hidden');
+});
+
+els.btnMigraElimina.addEventListener('click', () => {
+  if (!confirm('Eliminare definitivamente questi prodotti da questo dispositivo? Non si potranno recuperare.')) return;
+  Storage.eliminaSoloLocaliInAttesa();
+  mostraToast('Prodotti eliminati');
   els.viewMigrazione.classList.add('hidden');
 });
 
@@ -859,9 +1022,13 @@ document.getElementById('app-version').textContent = APP_VERSION;
 Auth.onChange(() => aggiornaViewAccount());
 
 Storage.onChange(renderLista);
-Storage.onDatiSoloLocali((prodotti) => {
-  renderListaMigrazione(prodotti);
-  els.viewMigrazione.classList.remove('hidden');
+Storage.onCasaChange(() => {
+  aggiornaViewCasa();
+  aggiornaUILineaConsumo();
+  renderLista();
+});
+Storage.onDatiSoloLocali((prodotti, contesto) => {
+  mostraPromptSoloLocali(prodotti, contesto);
 });
 Storage.init();
 try {
