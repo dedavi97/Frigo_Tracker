@@ -41,6 +41,18 @@ service cloud.firestore {
         return request.resource.data.diff(resource.data).affectedKeys().hasOnly(campi);
       }
 
+      // Valore ammesso per la PROPRIA voce nella mappa membri: esattamente i tre
+      // campi previsti, email uguale a quella del token di autenticazione (no
+      // impersonazione), entratoIl uguale all'ora della richiesta (il client usa
+      // serverTimestamp, quindi non può falsificare la propria anzianità e
+      // "rubare" il ruolo di creatore quando questi esce).
+      function mioMembroValido(m) {
+        return m.keys().hasOnly(['nome', 'email', 'entratoIl'])
+          && m.nome is string
+          && (request.auth.token.email == null || m.email == request.auth.token.email)
+          && m.entratoIl == request.time;
+      }
+
       // Un membro modifica contenuti condivisi (nome casa, linea di consumo).
       function isModificaContenuti() {
         return (request.auth.uid in membriPre())
@@ -48,14 +60,15 @@ service cloud.firestore {
       }
 
       // Adesione: l'unico cambiamento a membri è l'aggiunta della PROPRIA uid,
-      // e prima si era sotto i 5 membri.
+      // con un valore valido, e prima si era sotto i 5 membri.
       function isJoin() {
         return !(request.auth.uid in membriPre())
           && soloCampiCambiati(['membri'])
           && membriPost().keys().size() == membriPre().keys().size() + 1
           && membriPost().keys().size() <= 5
           && membriPost().keys().hasAll(membriPre().keys())
-          && (request.auth.uid in membriPost());
+          && (request.auth.uid in membriPost())
+          && mioMembroValido(membriPost()[request.auth.uid]);
       }
 
       // Abbandono: l'unico cambiamento a membri è la rimozione della PROPRIA uid.
@@ -95,6 +108,7 @@ service cloud.firestore {
       allow create: if request.auth != null
         && request.resource.data.creatoDa == request.auth.uid
         && request.resource.data.membri.keys().hasOnly([request.auth.uid])
+        && mioMembroValido(request.resource.data.membri[request.auth.uid])
         && request.resource.data.codice is string;
 
       allow update: if request.auth != null && (

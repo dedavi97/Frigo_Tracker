@@ -542,12 +542,17 @@ const Storage = {
       });
   },
 
+  // Valore associato alla propria uid nella mappa `membri`. `entratoIl` è un
+  // server timestamp (non l'orologio del client): le regole lo validano come
+  // `== request.time`, così nessuno può falsificare la propria anzianità per
+  // ereditare `creatoDa` quando il creatore esce. `email` deve combaciare con
+  // quella del token di autenticazione (niente impersonazione in lista membri).
   _membroSelf() {
     const utente = Auth.utenteCorrente();
     return {
       nome: (utente && utente.displayName) || '',
       email: (utente && utente.email) || '',
-      entratoIl: new Date().toISOString()
+      entratoIl: firebase.firestore.FieldValue.serverTimestamp()
     };
   },
 
@@ -660,11 +665,20 @@ const Storage = {
   },
 
   _membroPiuAnziano(membri, uidCandidati) {
-    return uidCandidati.slice().sort((a, b) => {
-      const ta = (membri[a] && membri[a].entratoIl) || '';
-      const tb = (membri[b] && membri[b].entratoIl) || '';
-      return ta.localeCompare(tb);
-    })[0];
+    return uidCandidati.slice().sort((a, b) =>
+      this._msEntrata(membri[a]) - this._msEntrata(membri[b])
+    )[0];
+  },
+
+  // entratoIl può essere un Timestamp Firestore (nuovo formato) o, per dati
+  // vecchi, una stringa ISO. Gestisce entrambi; valori assenti/illeggibili
+  // contano come "entrato all'inizio dei tempi".
+  _msEntrata(membro) {
+    const e = membro && membro.entratoIl;
+    if (!e) return 0;
+    if (typeof e.toMillis === 'function') return e.toMillis();
+    const t = new Date(e).getTime();
+    return isNaN(t) ? 0 : t;
   },
 
   // Cancella tutto ciò che riguarda una casa rimasta senza membri: prima i
