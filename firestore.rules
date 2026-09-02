@@ -72,8 +72,12 @@ service cloud.firestore {
       }
 
       // Abbandono: l'unico cambiamento a membri è la rimozione della PROPRIA uid.
+      // Il creatore NON passa da qui se restano altri membri: deve passare da
+      // isLeaveCreatore() (handoff obbligatorio di creatoDa), altrimenti
+      // resterebbe un creatoDa "orfano" che punta a nessuno.
       function isLeave() {
         return (request.auth.uid in membriPre())
+          && request.auth.uid != resource.data.creatoDa
           && soloCampiCambiati(['membri'])
           && membriPre().keys().size() == membriPost().keys().size() + 1
           && membriPre().keys().hasAll(membriPost().keys())
@@ -115,8 +119,13 @@ service cloud.firestore {
         isModificaContenuti() || isJoin() || isLeave() || isLeaveCreatore() || isRigeneraCodice()
       );
 
+      // Solo il creatore, e solo quando è rimasto l'unico membro (pulizia casa
+      // vuota, vedi _svuotaCasaCompletamente in js/storage.js). Impedisce al
+      // creatore di cancellare la casa mentre altri membri sono ancora dentro,
+      // cosa che violerebbe i permessi paritari orfanizzando i loro dati.
       allow delete: if request.auth != null
-        && request.auth.uid == resource.data.creatoDa;
+        && request.auth.uid == resource.data.creatoDa
+        && resource.data.membri.keys().hasOnly([request.auth.uid]);
 
       // ---- Prodotti della casa: tutti i membri, permessi paritari ----
       match /prodotti/{prodId} {
