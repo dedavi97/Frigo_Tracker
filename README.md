@@ -28,7 +28,13 @@ Nel dettaglio di un prodotto "aperto" o a scadenza stimata trovi un tasto "+7 gi
 
 ## Account e sincronizzazione (opzionale)
 
-Tocca l'icona account nell'header per accedere con Google. Da loggato, i prodotti si sincronizzano automaticamente tra tutti i dispositivi collegati allo stesso account (via Firestore). Il login è facoltativo: senza accedere, l'app funziona esattamente come in locale, salvando solo nel browser corrente. Se hai già dati salvati in locale, al primo accesso viene chiesto se caricarli online (restano comunque anche in locale).
+Tocca l'icona account nell'header per accedere con Google. Da loggato, i prodotti si sincronizzano automaticamente tra tutti i dispositivi collegati allo stesso account (via Firestore). Il login è facoltativo: senza accedere, l'app funziona esattamente come in locale, salvando solo nel browser corrente. Se hai già dati salvati in locale, al primo accesso viene chiesto cosa farne (caricarli online, lasciarli solo qui, o eliminarli); in caso di caricamento restano comunque anche in locale.
+
+### Case condivise
+
+Da loggato puoi creare una **casa condivisa** dalla schermata Account: un unico inventario per un massimo di 5 persone. Chi crea la casa ottiene un codice invito di 6 caratteri; gli altri lo inseriscono nella stessa schermata per entrare. Tutti i membri hanno permessi paritari (chiunque aggiunge/modifica/elimina qualsiasi prodotto) e i cambiamenti compaiono agli altri in tempo reale, senza ricaricare. Un contatore "N/5" mostra i posti liberi. Il creatore può rigenerare il codice (invalida il vecchio per nuove adesioni, i membri restano). La linea di consumo, dentro una casa, è condivisa tra tutti i membri. Si può abbandonare la casa in autonomia: il dispositivo che esce conserva una copia dei prodotti così com'erano all'uscita, che rientra tra i prodotti personali.
+
+> Le regole di sicurezza Firestore per le case condivise sono in `firestore.rules` e vanno pubblicate a mano nella Console Firebase.
 
 ## Avvio in locale (Windows)
 
@@ -50,13 +56,15 @@ Limitazioni note:
 
 ## Backlog (prossime iterazioni)
 
-1. Interfaccia dedicata per PC e per telefono, con passaggio automatico in base al dispositivo
-2. Notifiche push vere (anche ad app chiusa)
-3. Luoghi configurabili (frigo, dispensa, freezer, altro)
-4. Analytics: cosa si compra più spesso, cosa scade più spesso
-5. Inventario live (tracciamento anche di ciò che esce, non solo entra)
-6. Integrazione Google Calendar
-7. Notifiche configurabili (quanti giorni prima avvisare)
+1. Notifiche push vere (anche ad app chiusa)
+2. Luoghi configurabili (frigo, dispensa, freezer, altro)
+3. Analytics: cosa si compra più spesso, cosa scade più spesso
+4. Inventario live (tracciamento anche di ciò che esce, non solo entra)
+5. Integrazione Google Calendar
+6. Notifiche configurabili (quanti giorni prima avvisare)
+7. Raggruppamento in lista: non unisce singolari/plurali dello stesso alimento (bassa priorità, nessun fix semplice per l'italiano)
+
+Non più nel backlog: interfaccia dedicata PC/telefono — il problema concreto (layout desktop rotto) è stato risolto nel restyle V2; un layout radicalmente diverso ottimizzato per lo spazio orizzontale resta una possibilità futura ma non è un punto attivo.
 
 ## Struttura del progetto
 
@@ -72,12 +80,14 @@ Frigo_Tracker/
   js/app.js                        logica interfaccia
   manifest.json                    configurazione PWA
   service-worker.js                funzionamento offline base
+  firestore.rules                  regole di sicurezza Firestore (da pubblicare a mano)
   icons/                            icone dell'app
   run.bat                            avvio rapido da Windows
 ```
 
 ## Changelog
 
+- **v2.3.0** — Case condivise: inventario di gruppo fino a 5 membri, adesione tramite codice invito di 6 caratteri (mapping `codiciInvito/{codice}` → `case/{casaId}`), permessi paritari, lista membri visibile a tutti, nessuna attribuzione per-prodotto. Nuova modalità `'casa'` in `js/storage.js` con due listener realtime (documento casa + collezione prodotti); la casa è autoritativa (nessun merge, i prodotti personali in più si segnalano con `calcolaSoloLocali`). Linea di consumo condivisa a livello di casa (`case/{casaId}.lineaConsumo`) quando si è in una casa, solo `localStorage` altrimenti. Uscita: fotografia locale dei prodotti fusa nello storage personale, membership rimossa via `FieldValue.delete()`. Il creatore può rigenerare il codice (batch: elimina vecchio mapping, crea nuovo, aggiorna `case.codice`). Prompt "solo locali" esteso a 3 opzioni (aggiungi / lascia solo qui / elimina definitivamente), sia per la sync personale sia per l'adesione a una casa. Regole di sicurezza in `firestore.rules` (nuovo file). La sync personale resta invariata.
 - **v2.2.0** — Nuovo pulsante "Duplica" nel dettaglio prodotto: crea una copia indipendente (nuovo id) con stessi nome/scadenza/acquisto/motivo/note, sempre attiva e mai "aperta" anche se l'originale lo era, con navigazione automatica al dettaglio del duplicato appena creato.
 - **v2.1.4** — La sezione "Novità" in pagina aiuto includeva per errore solo i cambi di aspetto grafico: aggiunte le voci mancanti su quantità multiple e vocabolario esteso (v2.1.0) e sul fix "primo"/Primosale (v2.1.1); rinominata da "Novità di interfaccia" a "Novità" perché copre anche le nuove funzionalità, non solo il restyle.
 - **v2.1.3** — La sezione "Novità di interfaccia" nella pagina aiuto ora elenca una voce per versione (invece di un elenco unico senza riferimento a quale versione), con solo le novità che l'utente vede o usa davvero.
